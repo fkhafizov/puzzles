@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puzzle group explorers</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+      integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+        integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+
+<style>
+  :root{
+    --page:#f7f8f6;
+    --panel:#ffffff;
+    --ink:#1b1d21;
+    --ink-soft:#5a6068;
+    --rule:#e2e5e0;
+    --U:#f5f5f2; --D:#f2c53d; --F:#2f8f5b; --B:#2d5fa8; --R:#c4462f; --L:#e07a2f;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--page); color:var(--ink);
+    font:400 16px/1.6 Inter, system-ui, sans-serif;
+    letter-spacing:-0.005em;
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:0 24px}
+
+  h1,h2,h3{font-family:"Bricolage Grotesque", Inter, sans-serif; letter-spacing:-0.03em; margin:0}
+  .mono{font-family:"JetBrains Mono", ui-monospace, monospace}
+
+  .eyebrow{
+    font-family:"JetBrains Mono", monospace; font-size:12px; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--ink-soft);
+  }
+
+  /* ---------- header ---------- */
+  header{padding:72px 0 40px; border-bottom:1px solid var(--rule)}
+  header h1{font-size:clamp(38px,7vw,66px); font-weight:800; line-height:0.98; margin:14px 0 0}
+  header h1 em{font-style:normal; color:var(--F)}
+  .deck{max-width:56ch; margin:20px 0 0; color:var(--ink-soft); font-size:17px}
+  .facebar{display:flex; gap:6px; margin-top:28px}
+  .facebar span{height:6px; flex:1; border-radius:3px}
+
+  /* ---------- apps ---------- */
+  section{padding:56px 0; border-bottom:1px solid var(--rule)}
+  .sechead{display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:28px}
+  .sechead h2{font-size:26px; font-weight:600}
+
+  .apps{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px}
+  .app{
+    display:block; background:var(--panel); border:1px solid var(--rule); border-radius:14px;
+    padding:26px 24px 22px; text-decoration:none; color:inherit; position:relative;
+    transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+  }
+  .app:hover, .app:focus-visible{
+    border-color:var(--ink); transform:translateY(-2px);
+    box-shadow:0 10px 24px -18px rgba(27,29,33,.5);
+  }
+  .app:focus-visible{outline:2px solid var(--F); outline-offset:3px}
+  .app .tag{
+    font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    padding:3px 8px; border-radius:99px; border:1px solid var(--rule); color:var(--ink-soft);
+  }
+  .app .tag.live{border-color:var(--F); color:var(--F)}
+  .app h3{font-size:22px; font-weight:600; margin:16px 0 8px}
+  .app p{margin:0; color:var(--ink-soft); font-size:15px}
+  .app dl{
+    display:grid; grid-template-columns:auto 1fr; gap:6px 14px;
+    margin:18px 0 0; padding-top:16px; border-top:1px solid var(--rule); font-size:13.5px;
+  }
+  .app dt{font-family:"JetBrains Mono",monospace; font-size:11.5px; letter-spacing:.05em;
+          text-transform:uppercase; color:var(--ink-soft)}
+  .app dd{margin:0}
+  .app .go{position:absolute; top:24px; right:24px; color:var(--ink-soft); transition:transform .18s ease}
+  .app:hover .go{transform:translate(3px,-3px); color:var(--ink)}
+
+  /* ---------- chart ---------- */
+  .chartcard{background:var(--panel); border:1px solid var(--rule); border-radius:14px; padding:24px}
+  .controls{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px}
+  .seg{display:inline-flex; border:1px solid var(--rule); border-radius:8px; overflow:hidden}
+  .seg button{
+    font-family:"JetBrains Mono",monospace; font-size:12px; letter-spacing:.04em;
+    background:transparent; border:0; padding:7px 13px; cursor:pointer; color:var(--ink-soft);
+  }
+  .seg button[aria-pressed="true"]{background:var(--ink); color:var(--page)}
+  .seg button:focus-visible{outline:2px solid var(--F); outline-offset:-2px}
+  svg{display:block; width:100%; height:auto}
+  .bar{transition:opacity .15s ease}
+  .chartcard:hover .bar{opacity:.55}
+  .bar:hover{opacity:1}
+  .readout{
+    font-family:"JetBrains Mono",monospace; font-size:13px; color:var(--ink-soft);
+    min-height:1.6em; margin-top:10px;
+  }
+  .readout b{color:var(--ink); font-weight:500}
+  .caption{margin:18px 0 0; color:var(--ink-soft); font-size:15px; max-width:62ch}
+
+  /* ---------- facts ---------- */
+  .facts{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px}
+  .fact{background:var(--panel); border:1px solid var(--rule); border-radius:14px; padding:22px 22px 20px}
+  .fact .badge{
+    font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--ink-soft); display:inline-flex; align-items:center; gap:6px;
+  }
+  .fact .dot{width:8px; height:8px; border-radius:2px; display:inline-block}
+  .dot.computed{background:var(--F)}
+  .dot.derived{background:var(--B)}
+  .dot.literature{background:var(--L)}
+  .fact h3{font-size:17px; font-weight:600; margin:12px 0 8px}
+  .fact p{margin:0; font-size:15px; color:var(--ink-soft)}
+  .fact .big{
+    font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:34px;
+    letter-spacing:-.03em; line-height:1.05; color:var(--ink); margin:10px 0 6px;
+  }
+  .fact .big.sm{font-size:24px}
+
+  .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--ink-soft)}
+  .legend span{display:inline-flex; align-items:center; gap:7px}
+
+  .note{
+    margin-top:22px; padding:16px 18px; border-left:3px solid var(--D);
+    background:#fdf9ec; border-radius:0 10px 10px 0; font-size:14.5px; color:var(--ink-soft);
+  }
+
+  /* ---------- conventions ---------- */
+  .conv{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:26px}
+  .conv h3{font-size:15px; font-weight:600; margin-bottom:8px}
+  .conv p{margin:0; font-size:14.5px; color:var(--ink-soft)}
+
+  footer{padding:40px 0 64px; font-size:13.5px; color:var(--ink-soft)}
+  footer a{color:var(--ink)}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">fkhafizov.github.io / puzzles</div>
+    <h1>Twist a face,<br>move one step<br>through <em>a group</em>.</h1>
+    <p class="deck">Interactive explorers for permutation puzzles. Every app states its
+      composition convention, counts moves in both HTM and QTM, and shows $|G|$ in factored
+      form before the decimal.</p>
+    <div class="facebar" aria-hidden="true">
+      <span style="background:var(--U); border:1px solid var(--rule)"></span>
+      <span style="background:var(--D)"></span>
+      <span style="background:var(--F)"></span>
+      <span style="background:var(--B)"></span>
+      <span style="background:var(--R)"></span>
+      <span style="background:var(--L)"></span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Apps</h2>
+      <div class="eyebrow">single file · no build step</div>
+    </div>
+
+    <div class="apps">
+      <a class="app" href="https://fkhafizov.github.io/puzzles/cube222.html">
+        <span class="tag live">Live</span>
+        <svg class="go" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M4 12L12 4M12 4H6M12 4v6"/>
+        </svg>
+        <h3>2×2×2 cube</h3>
+        <p>Turn the faces, scramble, undo, and read the accumulated word and its inverse off
+          the move tape.</p>
+        <dl>
+          <dt>Generators</dt><dd class="mono">U, R, F &nbsp;(DBL fixed)</dd>
+          <dt>Order</dt><dd>$7!\cdot 3^{6} = 3{,}674{,}160$</dd>
+          <dt>Diameter</dt><dd>11 HTM · 14 QTM</dd>
+        </dl>
+      </a>
+
+      <a class="app" href="https://fkhafizov.github.io/puzzles/template.html">
+        <span class="tag">Starting point</span>
+        <svg class="go" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M4 12L12 4M12 4H6M12 4v6"/>
+        </svg>
+        <h3>Template</h3>
+        <p>The shared shell every puzzle app is built from: control panel, dual move counter,
+          move tape, and a collapsible Math panel.</p>
+        <dl>
+          <dt>Keys</dt><dd class="mono">letter · Shift · Alt</dd>
+          <dt>Panels</dt><dd>Controls, tape, math</dd>
+          <dt>Deps</dt><dd>KaTeX from CDN only</dd>
+        </dl>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <h2>How far is far?</h2>
+      <div class="eyebrow">2×2×2 · full BFS · 2026-08-21</div>
+    </div>
+
+    <div class="chartcard">
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Metric">
+          <button id="btn-htm" aria-pressed="true">HTM</button>
+          <button id="btn-qtm" aria-pressed="false">QTM</button>
+        </div>
+        <div class="seg" role="group" aria-label="Scale">
+          <button id="btn-lin" aria-pressed="true">linear</button>
+          <button id="btn-log" aria-pressed="false">log</button>
+        </div>
+      </div>
+
+      <svg id="chart" viewBox="0 0 720 300" role="img" aria-label="Distance histogram for the 2x2x2 cube"></svg>
+      <div class="readout" id="readout">Hover a bar for the exact count.</div>
+
+      <p class="caption">In the half-turn metric the distribution peaks at $d = 9$ and then
+        falls off a cliff: just <b>2,644</b> of 3,674,160 states — about <b>0.07%</b> — are
+        genuinely 11 moves from solved. The antipodal set is tiny, which is exactly why
+        IDA* with a decent pruning table works so well here. The quarter-turn metric
+        stretches the same group out two moves further and ends on 276 states at $d = 14$.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Facts worth knowing</h2>
+      <div class="legend">
+        <span><i class="dot computed"></i> computed</span>
+        <span><i class="dot derived"></i> derived</span>
+        <span><i class="dot literature"></i> literature</span>
+      </div>
+    </div>
+
+    <div class="facts">
+      <div class="fact">
+        <span class="badge"><i class="dot computed"></i> computed</span>
+        <div class="big">3,674,160</div>
+        <h3>The 2×2×2, exactly</h3>
+        <p>A full breadth-first search over the group with the DBL corner pinned reaches
+          exactly $7!\cdot 3^{6}$ states — which is itself a strong check that the move
+          tables are right.</p>
+      </div>
+
+      <div class="fact">
+        <span class="badge"><i class="dot computed"></i> computed</span>
+        <div class="big">0.07%</div>
+        <h3>Almost nothing is far away</h3>
+        <p>Only 2,644 states sit at HTM distance 11, and only 276 at QTM distance 14. Most
+          of the group crowds into the layers just below the diameter.</p>
+      </div>
+
+      <div class="fact">
+        <span class="badge"><i class="dot derived"></i> derived</span>
+        <div class="big sm">43,252,003,274,<br>489,856,000</div>
+        <h3>The 3×3×3</h3>
+        <p>$|G_3| = 8!\cdot 3^{7}\cdot 12!\cdot 2^{10}$. Evaluated exactly rather than
+          recalled; the formula is standard.</p>
+      </div>
+
+      <div class="fact">
+        <span class="badge"><i class="dot literature"></i> literature</span>
+        <div class="big">20 <span style="font-size:20px; color:var(--ink-soft)">HTM</span></div>
+        <h3>God's number, 3×3×3</h3>
+        <p>Twenty in the half-turn metric (Rokicki, Kociemba, Davidson and Dethridge, 2010);
+          twenty-six in the quarter-turn metric (Rokicki, 2014). The metric is never
+          optional — 20 and 26 describe the same puzzle.</p>
+      </div>
+
+      <div class="fact">
+        <span class="badge"><i class="dot derived"></i> derived</span>
+        <div class="big">$7.4012\times10^{45}$</div>
+        <h3>The 4×4×4</h3>
+        <p>$\dfrac{8!\cdot 3^{7}\cdot 24!\cdot 24!/(4!)^{6}}{24}$, where the division by 24
+          removes whole-cube orientation, since the centres no longer fix a frame.</p>
+      </div>
+
+      <div class="fact">
+        <span class="badge"><i class="dot computed"></i> computed</span>
+        <div class="big">11 · 14</div>
+        <h3>Two diameters, one group</h3>
+        <p>$\operatorname{diam}_{\mathrm{HTM}} G_2 = 11$ and
+          $\operatorname{diam}_{\mathrm{QTM}} G_2 = 14$. Charging 2 for a half turn instead
+          of 1 adds three moves to the worst case.</p>
+      </div>
+    </div>
+
+    <p class="note"><b>Not shown:</b> the Pyraminx, Tetraminx and Megaminx orders, and the
+      Professor Tetraminx order. Those entries are still marked unverified — recalled, not
+      checked — so they stay off this page until a BFS or a named source pins them down.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sechead"><h2>House rules</h2></div>
+    <div class="conv">
+      <div>
+        <h3>Composition reads left to right</h3>
+        <p>$\texttt{U R}$ means apply $U$ first, then $R$ — a right action,
+          $\sigma \mapsto \sigma\cdot U\cdot R$. Every Math panel says so, because this is
+          the usual reason a picture and a permutation printout disagree.</p>
+      </div>
+      <div>
+        <h3>Say which metric</h3>
+        <p>HTM counts $X$, $X'$ and $X2$ as one move each. QTM charges 2 for $X2$. Never
+          compare a diameter in one metric against a bound in the other.</p>
+      </div>
+      <div>
+        <h3>Faces are directions, not colors</h3>
+        <p>$U$ white, $D$ yellow, $F$ green, $B$ blue, $R$ red, $L$ orange — the standard
+          Western scheme, with $U$, $F$, $R$ meeting clockwise at a corner.</p>
+      </div>
+      <div>
+        <h3>Factored form first</h3>
+        <p>Group orders appear as products before decimals, and anything past $10^{20}$ gets
+          a four-figure scientific approximation instead of a wall of digits.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Conventions from <span class="mono">notation.md</span>; every number traced through
+    <span class="mono">verified-facts.md</span>.
+    <a href="https://github.com/fkhafizov">github.com/fkhafizov</a>
+  </div>
+</footer>
+
+<script>
+const DATA = {
+  HTM: [1,9,54,321,1847,9992,50136,227536,870072,1887748,623800,2644],
+  QTM: [1,6,27,120,534,2256,8969,33058,114149,360508,930588,1350852,782536,90280,276]
+};
+const TOTAL = 3674160;
+let metric = 'HTM', scale = 'lin';
+
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('chart');
+const readout = document.getElementById('readout');
+const fmt = n => n.toLocaleString('en-US');
+
+function el(tag, attrs, text){
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function draw(){
+  const vals = DATA[metric];
+  const W = 720, H = 300, padL = 46, padR = 14, padT = 16, padB = 34;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const f = v => scale === 'log' ? Math.log10(v + 1) : v;
+  const max = Math.max(...vals.map(f));
+  const step = plotW / vals.length;
+  const bw = Math.min(step - 8, 42);
+
+  svg.textContent = '';
+  svg.appendChild(el('line', {x1:padL-10, y1:padT+plotH, x2:W-padR, y2:padT+plotH,
+                             stroke:'#e2e5e0', 'stroke-width':1}));
+
+  vals.forEach((v, d) => {
+    const h = Math.max(f(v) / max * plotH, v > 0 ? 1.5 : 0);
+    const x = padL + d * step + (step - bw) / 2;
+    const y = padT + plotH - h;
+    const peak = v === Math.max(...vals);
+    const last = d === vals.length - 1;
+    const g = el('g', {class:'bar'});
+    g.appendChild(el('rect', {
+      x, y, width:bw, height:h, rx:2,
+      fill: last ? '#c4462f' : (peak ? '#2f8f5b' : '#2d5fa8'),
+      'fill-opacity': last || peak ? 1 : 0.72
+    }));
+    g.appendChild(el('rect', {x, y:padT, width:bw, height:plotH, fill:'transparent'}));
+    g.appendChild(el('text', {
+      x: padL + d*step + step/2, y: H - 12, 'text-anchor':'middle',
+      'font-family':'JetBrains Mono, monospace', 'font-size':11, fill:'#5a6068'
+    }, d));
+    const pct = (v / TOTAL * 100).toFixed(v / TOTAL < 0.001 ? 4 : 2);
+    const show = () => {
+      readout.innerHTML = `d = ${d} &nbsp;·&nbsp; <b>${fmt(v)}</b> states &nbsp;·&nbsp; `
+        + `<b>${pct}%</b> of the group &nbsp;·&nbsp; ${metric}`;
+    };
+    g.addEventListener('mouseenter', show);
+    g.addEventListener('focus', show);
+    g.setAttribute('tabindex', '0');
+    svg.appendChild(g);
+  });
+
+  svg.appendChild(el('text', {
+    x: padL - 12, y: padT + 10, 'text-anchor':'end',
+    'font-family':'JetBrains Mono, monospace', 'font-size':10.5, fill:'#5a6068'
+  }, scale === 'log' ? 'log' : fmt(Math.max(...vals))));
+
+  svg.appendChild(el('text', {
+    x: padL - 12, y: padT + plotH, 'text-anchor':'end',
+    'font-family':'JetBrains Mono, monospace', 'font-size':10.5, fill:'#5a6068'
+  }, '0'));
+}
+
+function bind(id, fn){ document.getElementById(id).addEventListener('click', fn); }
+function press(on, off){
+  document.getElementById(on).setAttribute('aria-pressed','true');
+  document.getElementById(off).setAttribute('aria-pressed','false');
+}
+bind('btn-htm', () => { metric='HTM'; press('btn-htm','btn-qtm'); draw(); });
+bind('btn-qtm', () => { metric='QTM'; press('btn-qtm','btn-htm'); draw(); });
+bind('btn-lin', () => { scale='lin'; press('btn-lin','btn-log'); draw(); });
+bind('btn-log', () => { scale='log'; press('btn-log','btn-lin'); draw(); });
+
+draw();
+
+window.addEventListener('load', () => {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left:'$$', right:'$$', display:true},
+        {left:'$',  right:'$',  display:false}
+      ],
+      throwOnError: false
+    });
+  }
+});
+</script>
+</body>
+</html>
