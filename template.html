@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>n×n×n — structure template</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#f7f8f6;
+  --card:#ffffff;
+  --ink:#16181d;
+  --muted:#6b7280;
+  --rule:#e3e6e1;
+  --accent:#2f5d50;
+  --accent-soft:#e8efeb;
+  --warn:#b4531f;
+  --display:'Spectral',Georgia,serif;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 22px 64px}
+
+/* ---------- masthead ---------- */
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+  display:flex; gap:14px; flex-wrap:wrap; align-items:baseline;
+}
+.eyebrow b{color:var(--accent);font-weight:500}
+h1{
+  font-family:var(--display); font-weight:600; font-size:clamp(28px,4.4vw,46px);
+  line-height:1.05; margin:.28em 0 .18em; letter-spacing:-.015em;
+}
+.standfirst{max-width:60ch;color:var(--muted);margin:0 0 22px}
+
+/* ---------- layout ---------- */
+.stage{
+  display:grid; grid-template-columns:minmax(0,1fr) 302px; gap:18px;
+  align-items:start;
+}
+@media (max-width:860px){ .stage{grid-template-columns:1fr} }
+
+.panel{
+  background:var(--card); border:1px solid var(--rule); border-radius:3px;
+}
+.panel-hd{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+  padding:9px 13px; border-bottom:1px solid var(--rule);
+}
+#viewport{position:relative;aspect-ratio:1/.82;min-height:330px}
+#viewport canvas{display:block;width:100%;height:100%;border-radius:0 0 3px 3px;cursor:grab}
+#viewport canvas:active{cursor:grabbing}
+.hint{
+  position:absolute; left:13px; bottom:11px; font-family:var(--mono);
+  font-size:10.5px; color:var(--muted); pointer-events:none;
+}
+
+/* ---------- controls ---------- */
+.ctl{padding:13px}
+.ctl + .ctl{border-top:1px solid var(--rule)}
+.lbl{
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block;
+}
+.faces{display:grid;grid-template-columns:22px repeat(3,1fr);gap:5px;align-items:center}
+.faces .fn{font-family:var(--mono);font-weight:500;font-size:14px;color:var(--accent)}
+button{
+  font-family:var(--mono);font-size:12.5px;color:var(--ink);
+  background:var(--paper);border:1px solid var(--rule);border-radius:2px;
+  padding:6px 0;cursor:pointer;transition:background .12s,border-color .12s;
+}
+button:hover{background:var(--accent-soft);border-color:var(--accent)}
+button:active{transform:translateY(.5px)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:flex;gap:6px}
+.row button{flex:1;padding:7px 0}
+.opts{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);align-items:center}
+.opts label{display:flex;gap:5px;align-items:center;cursor:pointer}
+select{
+  font-family:var(--mono);font-size:12.5px;padding:4px 6px;
+  border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--ink);
+}
+
+/* ---------- counters ---------- */
+.counts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.count{border:1px solid var(--rule);border-radius:2px;padding:8px 10px}
+.count .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;color:var(--muted);text-transform:uppercase}
+.count .v{font-family:var(--display);font-size:25px;line-height:1.15;font-weight:600}
+.solved{font-family:var(--mono);font-size:11.5px;margin-top:9px}
+.solved.yes{color:var(--accent)} .solved.no{color:var(--warn)}
+
+/* ---------- signature: the move tape ---------- */
+.tape{margin-top:18px}
+.tape-body{padding:0}
+.tape-line{
+  display:flex;align-items:baseline;gap:12px;padding:11px 13px;
+  font-family:var(--mono);font-size:14px;overflow-x:auto;white-space:nowrap;
+}
+.tape-line + .tape-line{border-top:1px dashed var(--rule)}
+.tape-line .tag{
+  flex:0 0 auto;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);width:66px;
+}
+.tape-line .w{flex:1 1 auto}
+.tape-line.inv .w{color:var(--muted)}
+.tape-line .w span{padding:0 1px}
+.tape-line .w span.last{background:var(--accent-soft);color:var(--accent);font-weight:500}
+.tape-line .w .empty{color:var(--muted);font-style:italic;font-family:var(--sans);font-size:13px}
+
+/* ---------- math ---------- */
+details.math{margin-top:18px;background:var(--card);border:1px solid var(--rule);border-radius:3px}
+details.math > summary{
+  list-style:none;cursor:pointer;padding:11px 13px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  display:flex;justify-content:space-between;align-items:center;
+}
+details.math > summary::-webkit-details-marker{display:none}
+details.math > summary::after{content:'+';font-size:15px;color:var(--accent)}
+details.math[open] > summary::after{content:'–'}
+details.math[open] > summary{border-bottom:1px solid var(--rule)}
+.math-body{padding:6px 18px 20px;max-width:74ch}
+.math-body h3{font-family:var(--display);font-weight:600;font-size:17px;margin:20px 0 6px}
+.math-body p{margin:.5em 0}
+.math-body .note{color:var(--muted);font-size:13.5px}
+.math-body code{font-family:var(--mono);font-size:12.5px;background:var(--paper);padding:1px 4px;border-radius:2px}
+.katex-display{margin:.7em 0}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">
+    <span id="eb-puzzle">2×2×2</span>
+    <span>·</span>
+    <span>|G| = <b id="eb-order">3,674,160</b></span>
+    <span>·</span>
+    <span>composition <b>left → right</b></span>
+  </div>
+
+  <h1 id="title">The pocket cube and its group</h1>
+  <p class="standfirst" id="standfirst">
+    Turn a face and watch the word grow. Every sequence you apply is an element of
+    the puzzle group; the tape below is that element, written out.
+  </p>
+
+  <div class="stage">
+
+    <!-- ---------------- viewport ---------------- -->
+    <section class="panel">
+      <div class="panel-hd">Puzzle</div>
+      <div id="viewport">
+        <span class="hint">drag to orbit · scroll to zoom · keys U D L R F B</span>
+      </div>
+    </section>
+
+    <!-- ---------------- controls ---------------- -->
+    <aside class="panel">
+      <div class="panel-hd">Controls</div>
+
+      <div class="ctl">
+        <span class="lbl">Face turns</span>
+        <div class="faces" id="faceGrid"></div>
+      </div>
+
+      <div class="ctl">
+        <div class="row">
+          <button id="btnScramble">scramble</button>
+          <button id="btnUndo">undo</button>
+          <button id="btnReset">reset</button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <span class="lbl">Puzzle</span>
+        <div class="opts">
+          <label>n =
+            <select id="selN">
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+          <label id="wideWrap" style="display:none">
+            <input type="checkbox" id="chkWide"> wide (2 layers)
+          </label>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <span class="lbl">Distance from solved</span>
+        <div class="counts">
+          <div class="count"><div class="k">HTM</div><div class="v" id="htm">0</div></div>
+          <div class="count"><div class="k">QTM</div><div class="v" id="qtm">0</div></div>
+        </div>
+        <div class="solved yes" id="solvedFlag">state = e</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ---------------- signature: move tape ---------------- -->
+  <section class="panel tape">
+    <div class="panel-hd">Move tape</div>
+    <div class="tape-body">
+      <div class="tape-line"><span class="tag">word</span><span class="w" id="tapeWord"></span></div>
+      <div class="tape-line inv"><span class="tag">inverse</span><span class="w" id="tapeInv"></span></div>
+    </div>
+  </section>
+
+  <!-- ---------------- math ---------------- -->
+  <details class="math" id="mathPanel">
+    <summary>Math</summary>
+    <div class="math-body" id="mathBody"></div>
+  </details>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<script>
+/* =====================================================================
+   TEMPLATE — n x n x n puzzle skeleton
+   Fork this file per puzzle. Edit CONFIG and PUZZLES; leave the engine alone.
+   Conventions are fixed by notation.md:
+     - Singmaster letters, ' for inverse, 2 for half turn
+     - composition is LEFT TO RIGHT
+     - HTM counts X/X'/X2 as 1; QTM charges X2 two moves
+   ===================================================================== */
+
+const CONFIG = {
+  faces: ['U','D','L','R','F','B'],
+  colors: {                       // notation.md §1
+    U:0xf5f5f2, D:0xf2c53d,
+    F:0x2f8f5b, B:0x2d5fa8,
+    R:0xc4462f, L:0xe07a2f,
+    body:0x1b1d21
+  },
+  cubie: 0.94,                    // body size
+  sticker: 0.80,                  // sticker plate size
+  turnMs: 150,                    // per quarter turn
+  scrambleLen: {2:11, 3:25, 4:40, 5:60},
+  camera: {radius: 5.6, theta: 0.72, phi: 1.02}
+};
+
+/* Per-puzzle prose + math. This is section 6 of the write-up template. */
+const PUZZLES = {
+  2: {
+    name:'2×2×2', title:'The pocket cube and its group', order:'3,674,160',
+    blurb:'Turn a face and watch the word grow. Every sequence you apply is an element of the puzzle group; the tape below is that element, written out.',
+    math:`
+<p>Fix the <code>DBL</code> corner. Then every state is reached by turning only
+<code>U</code>, <code>R</code>, <code>F</code>, and the group is generated by those three.</p>
+<h3>Order</h3>
+<p>Seven movable corners may be permuted freely, and six of their orientations are free —
+the seventh is forced by the twist-sum invariant:</p>
+$$|G_2| \\;=\\; 7!\\cdot 3^{6} \\;=\\; 3{,}674{,}160$$
+<h3>Structure</h3>
+<p>The naive corner group is the wreath product $\\mathbb{Z}_3 \\wr S_7$, of order
+$7!\\cdot 3^7$. The realizable subgroup is the kernel of the twist homomorphism
+$\\tau:\\mathbb{Z}_3\\wr S_7 \\to \\mathbb{Z}_3$, $\\tau(\\sigma,o)=\\sum_i o_i$,
+so $[\\mathbb{Z}_3\\wr S_7 : G_2] = 3$ and</p>
+$$G_2 \\;\\cong\\; (\\mathbb{Z}_3)^{6} \\rtimes S_7 .$$
+<h3>Metric facts</h3>
+<p>Complete BFS over all $3{,}674{,}160$ states gives</p>
+$$\\operatorname{diam}_{\\mathrm{HTM}} G_2 = 11, \\qquad \\operatorname{diam}_{\\mathrm{QTM}} G_2 = 14 .$$
+<p class="note">See <code>verified-facts.md</code> for the script and the full distance histogram.</p>
+<h3>Convention</h3>
+<p class="note">A word is applied left to right: <code>U R</code> means <em>first</em> $U$,
+<em>then</em> $R$. Its inverse is the reversed word with every letter inverted.</p>`
+  },
+  3: {
+    name:'3×3×3', title:'The Rubik\u2019s cube and its group', order:'4.325 × 10¹⁹',
+    blurb:'Corners, edges, and three parity constraints that cut the naive arrangement count by a factor of twelve.',
+    math:`
+<h3>Order</h3>
+$$|G_3| = 8!\\cdot 3^{7}\\cdot 12!\\cdot 2^{10} = 43{,}252{,}003{,}274{,}489{,}856{,}000$$
+<h3>The three invariants</h3>
+<p>Of the naive $8!\\cdot 3^{8}\\cdot 12!\\cdot 2^{12}$ arrangements only one in twelve is
+reachable, because every face turn preserves</p>
+$$\\sum_i o^{c}_i \\equiv 0 \\pmod 3, \\qquad
+  \\sum_i o^{e}_i \\equiv 0 \\pmod 2, \\qquad
+  \\operatorname{sgn}(\\sigma_c)=\\operatorname{sgn}(\\sigma_e).$$
+<h3>Metric facts</h3>
+<p>$\\operatorname{diam}_{\\mathrm{HTM}} G_3 = 20$ and
+$\\operatorname{diam}_{\\mathrm{QTM}} G_3 = 26$ — not computable in this page;
+see <code>verified-facts.md</code> for provenance.</p>`
+  },
+  4: {
+    name:'4×4×4', title:'The revenge cube and reduction', order:'7.401 × 10⁴⁵',
+    blurb:'Indistinguishable centre pieces, no fixed reference face, and the parity cases that only exist on even-order puzzles.',
+    math:`
+<h3>Order</h3>
+$$|G_4| = \\frac{8!\\cdot 3^{7}\\cdot 24!\\cdot 24!/(4!)^{6}}{24} \\approx 7.401\\times 10^{45}$$
+<p class="note">The division by $24$ removes whole-cube orientation: with no fixed centres
+there is no canonical frame.</p>
+<h3>Why parity appears</h3>
+<p>Reduction pairs the 24 wings into 12 composite edges. The reduced puzzle can land in a
+state that is odd as a permutation of composite edges yet even in $G_4$ — the familiar
+"OLL parity". Fill in the argument here.</p>
+<h3>Metric facts</h3>
+<p class="note">$\\operatorname{diam} G_4$ is unknown. Record only bounds, with the metric named.</p>`
+  },
+  5: {
+    name:'5×5×5', title:'The professor cube', order:'≈ 1.179 × 10⁷³',
+    blurb:'Fixed centres return, and with them a canonical frame — but two orbits of wings and two of centres.',
+    math:`
+<h3>Order</h3>
+$$|G_5| \\approx 1.179\\times 10^{73}$$
+<p class="note">Write out the factored form before trusting this figure, and log it in
+<code>verified-facts.md</code>.</p>`
+  }
+};
+
+/* ===================== engine ===================== */
+const AXIS = {U:'y', D:'y', R:'x', L:'x', F:'z', B:'z'};
+const SIGN = {U:+1, D:-1, R:+1, L:-1, F:+1, B:-1};
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let N = 2, wide = false;
+let scene, camera, renderer, cubeGroup, cubies = [];
+let queue = [], animating = null, history = [], htm = 0, qtm = 0;
+let cam = Object.assign({}, CONFIG.camera);
+
+const viewport = document.getElementById('viewport');
+
+function initThree(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xfdfdfc);
+  camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  viewport.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+  const key = new THREE.DirectionalLight(0xffffff, 0.55); key.position.set(4,7,5);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.28); fill.position.set(-5,-3,-4);
+  scene.add(key, fill);
+
+  cubeGroup = new THREE.Group();
+  scene.add(cubeGroup);
+
+  resize();
+  addEventListener('resize', resize);
+  bindPointer();
+  renderer.setAnimationLoop(tick);
+}
+
+function resize(){
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  if(!w || !h) return;
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+}
+
+function placeCamera(){
+  camera.position.set(
+    cam.radius*Math.sin(cam.phi)*Math.sin(cam.theta),
+    cam.radius*Math.cos(cam.phi),
+    cam.radius*Math.sin(cam.phi)*Math.cos(cam.theta)
+  );
+  camera.lookAt(0,0,0);
+}
+
+function bindPointer(){
+  const el = renderer.domElement;
+  let drag = false, px = 0, py = 0;
+  el.addEventListener('pointerdown', e => { drag = true; px = e.clientX; py = e.clientY; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointerup',   e => { drag = false; });
+  el.addEventListener('pointermove', e => {
+    if(!drag) return;
+    cam.theta -= (e.clientX - px) * 0.008;
+    cam.phi    = Math.max(0.12, Math.min(Math.PI-0.12, cam.phi - (e.clientY - py) * 0.008));
+    px = e.clientX; py = e.clientY;
+  });
+  el.addEventListener('wheel', e => {
+    e.preventDefault();
+    cam.radius = Math.max(3, Math.min(14, cam.radius + Math.sign(e.deltaY)*0.35));
+  }, {passive:false});
+}
+
+/* ---- build ---- */
+const stickerGeo = new THREE.PlaneGeometry(CONFIG.sticker, CONFIG.sticker);
+const bodyGeo    = new THREE.BoxGeometry(CONFIG.cubie, CONFIG.cubie, CONFIG.cubie);
+const bodyMat    = new THREE.MeshLambertMaterial({color: CONFIG.colors.body});
+
+function buildCube(){
+  cubies.forEach(c => cubeGroup.remove(c));
+  cubies = [];
+  const off = (N-1)/2;
+  const half = CONFIG.cubie/2 + 0.006;
+
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++) for(let k=0;k<N;k++){
+    if(N>2 && i>0 && i<N-1 && j>0 && j<N-1 && k>0 && k<N-1) continue; // hollow core
+    const m = new THREE.Mesh(bodyGeo, bodyMat);
+    m.position.set(i-off, j-off, k-off);
+    // outward stickers only
+    const spec = [
+      ['R', i===N-1, [ half,0,0], [0, Math.PI/2,0]],
+      ['L', i===0,   [-half,0,0], [0,-Math.PI/2,0]],
+      ['U', j===N-1, [0, half,0], [-Math.PI/2,0,0]],
+      ['D', j===0,   [0,-half,0], [ Math.PI/2,0,0]],
+      ['F', k===N-1, [0,0, half], [0,0,0]],
+      ['B', k===0,   [0,0,-half], [0,Math.PI,0]]
+    ];
+    for(const [f, on, pos, rot] of spec){
+      if(!on) continue;
+      const s = new THREE.Mesh(stickerGeo, new THREE.MeshLambertMaterial({color: CONFIG.colors[f]}));
+      s.position.set(...pos); s.rotation.set(...rot);
+      m.add(s);
+    }
+    cubeGroup.add(m); cubies.push(m);
+  }
+  cam.radius = CONFIG.camera.radius * (1 + (N-2)*0.30);
+}
+
+/* ---- moves ---- */
+// move object: {face, turns (1|-1|2), layers}
+function parse(face, mod, layers){
+  return {face, turns: mod === "'" ? -1 : mod === '2' ? 2 : 1, layers: layers || 1};
+}
+function moveName(mv){
+  const w = mv.layers > 1 ? (mv.layers === 2 ? 'w' : '') : '';
+  const pre = mv.layers > 2 ? mv.layers : '';
+  return pre + mv.face + w + (mv.turns === -1 ? "'" : mv.turns === 2 ? '2' : '');
+}
+function invert(mv){ return {face:mv.face, turns: mv.turns === 2 ? 2 : -mv.turns, layers:mv.layers}; }
+
+function selectLayer(mv){
+  const ax = AXIS[mv.face], s = SIGN[mv.face], off = (N-1)/2, eps = 1e-6;
+  const out = [];
+  for(const c of cubies){
+    const v = c.position[ax];
+    const depth = s > 0 ? off - v : v + off;      // 0 = outermost on that face
+    if(depth > -eps && depth < mv.layers - eps) out.push(c);
+  }
+  return out;
+}
+
+function push(mv){ queue.push(mv); }
+
+function startNext(){
+  if(animating || !queue.length) return;
+  const mv = queue.shift();
+  const group = selectLayer(mv);
+  const pivot = new THREE.Object3D();
+  cubeGroup.add(pivot);
+  group.forEach(c => pivot.attach(c));
+  // clockwise seen from outside face -> negative rotation about the +axis when SIGN>0
+  const target = -SIGN[mv.face] * (Math.PI/2) * mv.turns;
+  animating = {mv, pivot, group, target, t:0,
+               dur: REDUCED ? 0 : CONFIG.turnMs * Math.abs(mv.turns)};
+}
+
+function finish(){
+  const {pivot, group, mv, target} = animating;
+  pivot.rotation[AXIS[mv.face]] = target;
+  pivot.updateMatrixWorld(true);
+  group.forEach(c => {
+    cubeGroup.attach(c);
+    c.position.set(snap(c.position.x), snap(c.position.y), snap(c.position.z));
+    snapQuat(c);
+  });
+  cubeGroup.remove(pivot);
+  animating = null;
+  refresh();
+}
+const snap = v => Math.round(v*2)/2;
+function snapQuat(o){
+  const m = new THREE.Matrix4().makeRotationFromQuaternion(o.quaternion);
+  const e = m.elements.map(x => Math.round(x));
+  m.fromArray(e);
+  o.quaternion.setFromRotationMatrix(m);
+}
+
+function tick(dt){
+  placeCamera();
+  if(!animating) startNext();
+  if(animating){
+    if(animating.dur === 0){ finish(); }
+    else{
+      animating.t += 16.7;
+      const u = Math.min(1, animating.t/animating.dur);
+      const ease = u<0.5 ? 2*u*u : 1-Math.pow(-2*u+2,2)/2;
+      animating.pivot.rotation[AXIS[animating.mv.face]] = animating.target * ease;
+      if(u >= 1) finish();
+    }
+  }
+  renderer.render(scene, camera);
+}
+
+/* ---- state / bookkeeping ---- */
+function doMove(mv, record = true){
+  push(mv);
+  if(record){
+    history.push(mv);
+    htm += 1;
+    qtm += (mv.turns === 2 ? 2 : 1);
+  }
+  renderTape();
+  updateCounts();
+}
+
+function undo(){
+  if(!history.length) return;
+  const mv = history.pop();
+  htm -= 1; qtm -= (mv.turns === 2 ? 2 : 1);
+  push(invert(mv));
+  renderTape(); updateCounts();
+}
+
+function reset(){
+  queue = []; history = []; htm = 0; qtm = 0;
+  if(animating){ cubeGroup.remove(animating.pivot); animating = null; }
+  buildCube(); renderTape(); updateCounts(); refresh();
+}
+
+function scramble(){
+  const n = CONFIG.scrambleLen[N] || 25;
+  let prev = null;
+  for(let i=0;i<n;i++){
+    let f;
+    do { f = CONFIG.faces[Math.floor(Math.random()*6)]; } while(f === prev);
+    prev = f;
+    const t = [1,-1,2][Math.floor(Math.random()*3)];
+    const L = (N >= 4 && Math.random() < 0.35) ? 2 : 1;
+    doMove({face:f, turns:t, layers:L});
+  }
+}
+
+/* TODO per puzzle: replace the word-length test below with a real state test —
+   read the sticker colours off each outer face and check each face is monochrome.
+   Word length only tells you whether any move was made, not whether it undid itself. */
+function refresh(){
+  const flag = document.getElementById('solvedFlag');
+  const solved = history.length === 0;
+  flag.textContent = solved ? 'state = e' : 'state ≠ e';
+  flag.className = 'solved ' + (solved ? 'yes' : 'no');
+}
+
+function updateCounts(){
+  document.getElementById('htm').textContent = htm;
+  document.getElementById('qtm').textContent = qtm;
+  refresh();
+}
+
+function renderTape(){
+  const w = document.getElementById('tapeWord');
+  const iv = document.getElementById('tapeInv');
+  if(!history.length){
+    w.innerHTML  = '<span class="empty">identity — turn a face to begin</span>';
+    iv.innerHTML = '<span class="empty">e</span>';
+    return;
+  }
+  w.innerHTML = history
+    .map((m,i) => `<span class="${i===history.length-1?'last':''}">${moveName(m)}</span>`)
+    .join(' ');
+  iv.innerHTML = history.slice().reverse()
+    .map(m => `<span>${moveName(invert(m))}</span>`).join(' ');
+  const line = w.parentElement; line.scrollLeft = line.scrollWidth;
+}
+
+/* ---- UI ---- */
+function buildFaceGrid(){
+  const g = document.getElementById('faceGrid');
+  g.innerHTML = '';
+  for(const f of CONFIG.faces){
+    const label = document.createElement('div');
+    label.className = 'fn'; label.textContent = f;
+    g.appendChild(label);
+    for(const mod of ['', "'", '2']){
+      const b = document.createElement('button');
+      b.textContent = f + mod;
+      b.onclick = () => doMove(parse(f, mod, wide ? 2 : 1));
+      g.appendChild(b);
+    }
+  }
+}
+
+function loadPuzzle(n){
+  N = n;
+  const p = PUZZLES[n];
+  document.getElementById('eb-puzzle').textContent = p.name;
+  document.getElementById('eb-order').textContent  = p.order;
+  document.getElementById('title').textContent     = p.title;
+  document.getElementById('standfirst').textContent = p.blurb;
+  document.getElementById('mathBody').innerHTML     = p.math;
+  renderMathInElement(document.getElementById('mathBody'), {
+    delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],
+    throwOnError:false
+  });
+  document.getElementById('wideWrap').style.display = n >= 4 ? 'flex' : 'none';
+  if(n < 4){ wide = false; document.getElementById('chkWide').checked = false; }
+  reset();
+}
+
+document.getElementById('btnScramble').onclick = scramble;
+document.getElementById('btnUndo').onclick     = undo;
+document.getElementById('btnReset').onclick    = reset;
+document.getElementById('selN').onchange = e => loadPuzzle(+e.target.value);
+document.getElementById('chkWide').onchange = e => wide = e.target.checked;
+
+addEventListener('keydown', e => {
+  if(e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  const f = e.key.toUpperCase();
+  if(!CONFIG.faces.includes(f)) return;
+  e.preventDefault();
+  const mod = e.altKey ? '2' : e.shiftKey ? "'" : '';
+  doMove(parse(f, mod, wide ? 2 : 1));
+});
+
+/* ---- go ---- */
+initThree();
+buildFaceGrid();
+buildCube();
+loadPuzzle(2);
+</script>
+</body>
+</html>
