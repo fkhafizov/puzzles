@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2×2×2 — the pocket cube and its group</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#f7f8f6;
+  --card:#ffffff;
+  --ink:#16181d;
+  --muted:#6b7280;
+  --rule:#e3e6e1;
+  --accent:#2f5d50;
+  --accent-soft:#e8efeb;
+  --warn:#b4531f;
+  --warn-soft:#f7ece4;
+  --display:'Spectral',Georgia,serif;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 22px 64px}
+
+/* ---------- masthead ---------- */
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+  display:flex; gap:14px; flex-wrap:wrap; align-items:baseline;
+}
+.eyebrow b{color:var(--accent);font-weight:500}
+h1{
+  font-family:var(--display); font-weight:600; font-size:clamp(28px,4.4vw,46px);
+  line-height:1.05; margin:.28em 0 .18em; letter-spacing:-.015em;
+}
+.standfirst{max-width:60ch;color:var(--muted);margin:0 0 22px}
+
+/* ---------- layout ---------- */
+.stage{
+  display:grid; grid-template-columns:minmax(0,1fr) 302px; gap:18px;
+  align-items:start;
+}
+.stage + .stage{margin-top:18px}
+@media (max-width:860px){ .stage{grid-template-columns:1fr} }
+
+.panel{
+  background:var(--card); border:1px solid var(--rule); border-radius:3px;
+}
+.panel-hd{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+  padding:9px 13px; border-bottom:1px solid var(--rule);
+  display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+}
+.panel-hd .rhs{letter-spacing:0;text-transform:none;font-size:11px}
+#viewport{position:relative;aspect-ratio:1/.82;min-height:330px}
+#viewport canvas{display:block;width:100%;height:100%;border-radius:0 0 3px 3px;cursor:grab}
+#viewport canvas:active{cursor:grabbing}
+.hint{
+  position:absolute; left:13px; bottom:11px; font-family:var(--mono);
+  font-size:10.5px; color:var(--muted); pointer-events:none;
+}
+
+/* ---------- controls ---------- */
+.ctl{padding:13px}
+.ctl + .ctl{border-top:1px solid var(--rule)}
+.lbl{
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block;
+}
+.faces{display:grid;grid-template-columns:22px repeat(3,1fr);gap:5px;align-items:center}
+.faces .fn{font-family:var(--mono);font-weight:500;font-size:14px;color:var(--accent)}
+button{
+  font-family:var(--mono);font-size:12.5px;color:var(--ink);
+  background:var(--paper);border:1px solid var(--rule);border-radius:2px;
+  padding:6px 0;cursor:pointer;transition:background .12s,border-color .12s;
+}
+button:hover{background:var(--accent-soft);border-color:var(--accent)}
+button:active{transform:translateY(.5px)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:flex;gap:6px}
+.row button{flex:1;padding:7px 0}
+
+/* ---------- counters ---------- */
+.counts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.count{border:1px solid var(--rule);border-radius:2px;padding:8px 10px}
+.count .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;color:var(--muted);text-transform:uppercase}
+.count .v{font-family:var(--display);font-size:25px;line-height:1.15;font-weight:600}
+.solved{font-family:var(--mono);font-size:11.5px;margin-top:9px}
+.solved.yes{color:var(--accent)} .solved.no{color:var(--warn)}
+
+/* ---------- signature: the move tape ---------- */
+.tape{margin-top:18px}
+.tape-body{padding:0}
+.tape-line{
+  display:flex;align-items:baseline;gap:12px;padding:11px 13px;
+  font-family:var(--mono);font-size:14px;overflow-x:auto;white-space:nowrap;
+}
+.tape-line + .tape-line{border-top:1px dashed var(--rule)}
+.tape-line .tag{
+  flex:0 0 auto;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);width:66px;
+}
+.tape-line .w{flex:1 1 auto}
+.tape-line.inv .w{color:var(--muted)}
+.tape-line .w span{padding:0 1px}
+.tape-line .w span.last{background:var(--accent-soft);color:var(--accent);font-weight:500}
+.tape-line .w .empty{color:var(--muted);font-style:italic;font-family:var(--sans);font-size:13px}
+
+/* ---------- signature: the state vector ---------- */
+.sv{padding:13px 13px 15px;overflow-x:auto}
+table.sv-t{border-collapse:collapse;font-family:var(--mono);width:100%;min-width:520px}
+table.sv-t th,table.sv-t td{
+  text-align:center;padding:6px 4px;border-bottom:1px solid var(--rule);
+  font-weight:400;font-size:13.5px;
+}
+table.sv-t tr:last-child td{border-bottom:none}
+table.sv-t th.rk,table.sv-t td.rk{
+  text-align:left;width:74px;font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);white-space:nowrap;
+}
+table.sv-t thead th{font-size:11px;color:var(--muted);letter-spacing:.04em}
+table.sv-t thead th .ix{display:block;font-size:9px;color:var(--rule);letter-spacing:.1em}
+table.sv-t thead th.pinned{color:var(--warn)}
+td.cell{transition:background .18s,color .18s}
+td.cell.moved{background:var(--accent-soft);color:var(--accent);font-weight:600}
+td.cell.pinned{color:var(--muted);background:repeating-linear-gradient(
+  45deg,transparent,transparent 3px,#f2f3f0 3px,#f2f3f0 6px)}
+.sv-eq{margin-top:12px;display:flex;flex-direction:column;gap:7px;font-size:14px}
+.sv-eq .ln{overflow-x:auto;padding-bottom:2px}
+
+/* ---------- invariants ---------- */
+.inv-row{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  padding:7px 0;border-bottom:1px dashed var(--rule);
+}
+.inv-row:last-child{border-bottom:none}
+.inv-row .k{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.inv-row .v{font-family:var(--mono);font-size:13px}
+.ok{color:var(--accent)} .bad{color:var(--warn)}
+.chips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:4px}
+.chip{text-align:center}
+.chip .sw{
+  height:26px;border-radius:2px;border:2px solid transparent;
+  display:block;transition:border-color .18s;
+}
+.chip.mono .sw{border-color:var(--accent)}
+.chip.mixed .sw{border-color:var(--warn)}
+.chip .cf{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px;display:block}
+
+/* ---------- math ---------- */
+details.math{margin-top:18px;background:var(--card);border:1px solid var(--rule);border-radius:3px}
+details.math > summary{
+  list-style:none;cursor:pointer;padding:11px 13px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  display:flex;justify-content:space-between;align-items:center;
+}
+details.math > summary::-webkit-details-marker{display:none}
+details.math > summary::after{content:'+';font-size:15px;color:var(--accent)}
+details.math[open] > summary::after{content:'–'}
+details.math[open] > summary{border-bottom:1px solid var(--rule)}
+.math-body{padding:6px 18px 20px;max-width:74ch}
+.math-body h3{font-family:var(--display);font-weight:600;font-size:17px;margin:20px 0 6px}
+.math-body p{margin:.5em 0}
+.math-body .note{color:var(--muted);font-size:13.5px}
+.math-body .flag{
+  border-left:3px solid var(--warn);background:var(--warn-soft);
+  padding:9px 13px;font-size:13.5px;margin:14px 0;border-radius:0 2px 2px 0;
+}
+.math-body code{font-family:var(--mono);font-size:12.5px;background:var(--paper);padding:1px 4px;border-radius:2px}
+.math-body ul{margin:.5em 0;padding-left:1.15em}
+.math-body li{margin:.25em 0}
+.katex-display{margin:.7em 0}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">
+    <span>2×2×2</span>
+    <span>·</span>
+    <span>|G| = <b>3,674,160</b></span>
+    <span>·</span>
+    <span>generators <b>U, R, F</b></span>
+    <span>·</span>
+    <span>composition <b>left → right</b></span>
+  </div>
+
+  <h1>The pocket cube and its group</h1>
+  <p class="standfirst">
+    Turn a face and watch two things move together: the physical puzzle, and the group
+    element it represents. The state vector below <em>is</em> that element, written out.
+  </p>
+
+  <div class="stage">
+
+    <!-- ---------------- viewport ---------------- -->
+    <section class="panel">
+      <div class="panel-hd">Puzzle</div>
+      <div id="viewport">
+        <span class="hint">drag to orbit · scroll to zoom · keys U R F · shift = ' · alt = 2</span>
+      </div>
+    </section>
+
+    <!-- ---------------- controls ---------------- -->
+    <aside class="panel">
+      <div class="panel-hd">Controls</div>
+
+      <div class="ctl">
+        <span class="lbl">Face turns — DBL is pinned</span>
+        <div class="faces" id="faceGrid"></div>
+      </div>
+
+      <div class="ctl">
+        <div class="row">
+          <button id="btnScramble">scramble</button>
+          <button id="btnUndo">undo</button>
+          <button id="btnReset">reset</button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <span class="lbl">Word length</span>
+        <div class="counts">
+          <div class="count"><div class="k">HTM</div><div class="v" id="htm">0</div></div>
+          <div class="count"><div class="k">QTM</div><div class="v" id="qtm">0</div></div>
+        </div>
+        <div class="solved yes" id="solvedFlag">every face monochrome</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ---------------- signature: state vector + invariants ---------------- -->
+  <div class="stage">
+
+    <section class="panel">
+      <div class="panel-hd">
+        <span>State vector</span>
+        <span class="rhs" id="svHead"></span>
+      </div>
+      <div class="sv">
+        <table class="sv-t">
+          <thead>
+            <tr id="svSlots"><th class="rk">slot</th></tr>
+          </thead>
+          <tbody>
+            <tr id="svPerm"><td class="rk">σ(i)</td></tr>
+            <tr id="svOri"><td class="rk">o(i)</td></tr>
+          </tbody>
+        </table>
+        <div class="sv-eq">
+          <div class="ln" id="eqCycle"></div>
+          <div class="ln" id="eqTwist"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-hd">Invariants</div>
+      <div class="ctl">
+        <div class="inv-row"><span class="k">twist sum mod 3</span><span class="v" id="ivTwist">0 ✓</span></div>
+        <div class="inv-row"><span class="k">sgn σ</span><span class="v" id="ivSgn">+1</span></div>
+        <div class="inv-row"><span class="k">corners home</span><span class="v" id="ivFixed">7 / 7</span></div>
+        <div class="inv-row"><span class="k">order of state</span><span class="v" id="ivOrder">1</span></div>
+      </div>
+      <div class="ctl">
+        <span class="lbl">Face colour test</span>
+        <div class="chips" id="chips"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ---------------- signature: move tape ---------------- -->
+  <section class="panel tape">
+    <div class="panel-hd">Move tape</div>
+    <div class="tape-body">
+      <div class="tape-line"><span class="tag">word</span><span class="w" id="tapeWord"></span></div>
+      <div class="tape-line inv"><span class="tag">inverse</span><span class="w" id="tapeInv"></span></div>
+    </div>
+  </section>
+
+  <!-- ---------------- math ---------------- -->
+  <details class="math" id="mathPanel">
+    <summary>Math</summary>
+    <div class="math-body" id="mathBody"></div>
+  </details>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<script>
+/* =====================================================================
+   2x2x2 — forked from template.html
+   Conventions fixed by notation.md:
+     - Singmaster letters, ' for inverse, 2 for half turn
+     - composition is LEFT TO RIGHT
+     - HTM counts X/X'/X2 as 1; QTM charges X2 two moves
+     - Kociemba corner order; DBL (index 6) pinned; generators U, R, F
+   The geometric read-off of (sigma, o) in readState() was checked against the
+   BFS move tables in verified-facts.md §3 over a 20,000-step random walk.
+   ===================================================================== */
+
+const N = 2;
+
+const CONFIG = {
+  faces: ['U','R','F'],           // notation.md §5: DBL pinned => U, R, F generate
+  colors: {                       // notation.md §1
+    U:0xf5f5f2, D:0xf2c53d,
+    F:0x2f8f5b, B:0x2d5fa8,
+    R:0xc4462f, L:0xe07a2f,
+    body:0x1b1d21
+  },
+  cubie: 0.94,
+  sticker: 0.80,
+  turnMs: 150,
+  scrambleLen: 11,                // = diam_HTM G_2, verified-facts.md §3
+  camera: {radius: 5.6, theta: 0.72, phi: 1.02}
+};
+
+/* ---- Kociemba slot geometry, notation.md §5 ----
+   0=URF 1=UFL 2=ULB 3=UBR 4=DFR 5=DLF 6=DBL 7=DRB
+   with U=+y D=-y R=+x L=-x F=+z B=-z                                    */
+const SLOT_NAME  = ['URF','UFL','ULB','UBR','DFR','DLF','DBL','DRB'];
+const SLOT_SIGNS = [[1,1,1],[-1,1,1],[-1,1,-1],[1,1,-1],
+                    [1,-1,1],[-1,-1,1],[-1,-1,-1],[1,-1,-1]];
+const PINNED = 6;                                   // DBL
+const SIGN_KEY = {};
+SLOT_SIGNS.forEach((s,i) => SIGN_KEY[s.join(',')] = i);
+const slotOf = v => SIGN_KEY[[v.x,v.y,v.z].map(c => c > 0 ? 1 : -1).join(',')];
+
+/* ===================== engine ===================== */
+const AXIS = {U:'y', D:'y', R:'x', L:'x', F:'z', B:'z'};
+const SIGN = {U:+1, D:-1, R:+1, L:-1, F:+1, B:-1};
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let scene, camera, renderer, cubeGroup, cubies = [];
+let queue = [], animating = null, history = [], htm = 0, qtm = 0;
+let cam = Object.assign({}, CONFIG.camera);
+
+const viewport = document.getElementById('viewport');
+
+function initThree(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xfdfdfc);
+  camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  viewport.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+  const key = new THREE.DirectionalLight(0xffffff, 0.55); key.position.set(4,7,5);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.28); fill.position.set(-5,-3,-4);
+  scene.add(key, fill);
+
+  cubeGroup = new THREE.Group();
+  scene.add(cubeGroup);
+
+  resize();
+  addEventListener('resize', resize);
+  bindPointer();
+  renderer.setAnimationLoop(tick);
+}
+
+function resize(){
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  if(!w || !h) return;
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+}
+
+function placeCamera(){
+  camera.position.set(
+    cam.radius*Math.sin(cam.phi)*Math.sin(cam.theta),
+    cam.radius*Math.cos(cam.phi),
+    cam.radius*Math.sin(cam.phi)*Math.cos(cam.theta)
+  );
+  camera.lookAt(0,0,0);
+}
+
+function bindPointer(){
+  const el = renderer.domElement;
+  let drag = false, px = 0, py = 0;
+  el.addEventListener('pointerdown', e => { drag = true; px = e.clientX; py = e.clientY; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointerup',   e => { drag = false; });
+  el.addEventListener('pointermove', e => {
+    if(!drag) return;
+    cam.theta -= (e.clientX - px) * 0.008;
+    cam.phi    = Math.max(0.12, Math.min(Math.PI-0.12, cam.phi - (e.clientY - py) * 0.008));
+    px = e.clientX; py = e.clientY;
+  });
+  el.addEventListener('wheel', e => {
+    e.preventDefault();
+    cam.radius = Math.max(3, Math.min(14, cam.radius + Math.sign(e.deltaY)*0.35));
+  }, {passive:false});
+}
+
+/* ---- build ---- */
+const stickerGeo = new THREE.PlaneGeometry(CONFIG.sticker, CONFIG.sticker);
+const bodyGeo    = new THREE.BoxGeometry(CONFIG.cubie, CONFIG.cubie, CONFIG.cubie);
+const bodyMat    = new THREE.MeshLambertMaterial({color: CONFIG.colors.body});
+
+function buildCube(){
+  cubies.forEach(c => cubeGroup.remove(c));
+  cubies = [];
+  const off = (N-1)/2;
+  const half = CONFIG.cubie/2 + 0.006;
+
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++) for(let k=0;k<N;k++){
+    const m = new THREE.Mesh(bodyGeo, bodyMat);
+    m.position.set(i-off, j-off, k-off);
+
+    const spec = [
+      ['R', i===N-1, [ half,0,0], [0, Math.PI/2,0], [ 1,0,0]],
+      ['L', i===0,   [-half,0,0], [0,-Math.PI/2,0], [-1,0,0]],
+      ['U', j===N-1, [0, half,0], [-Math.PI/2,0,0], [0, 1,0]],
+      ['D', j===0,   [0,-half,0], [ Math.PI/2,0,0], [0,-1,0]],
+      ['F', k===N-1, [0,0, half], [0,0,0],          [0,0, 1]],
+      ['B', k===0,   [0,0,-half], [0,Math.PI,0],    [0,0,-1]]
+    ];
+    const stickers = [];
+    for(const [f, on, pos, rot, nrm] of spec){
+      if(!on) continue;
+      const s = new THREE.Mesh(stickerGeo, new THREE.MeshLambertMaterial({color: CONFIG.colors[f]}));
+      s.position.set(...pos); s.rotation.set(...rot);
+      s.userData = {face:f, n:new THREE.Vector3(...nrm)};
+      m.add(s); stickers.push(s);
+    }
+
+    /* identity of this cubie, recorded once at build time */
+    m.userData.home     = slotOf(m.position);
+    m.userData.stickers = stickers;
+    // the single U- or D-facelet: the reference facelet for the twist cocycle
+    m.userData.udLocal  = new THREE.Vector3(0, m.position.y > 0 ? 1 : -1, 0);
+
+    cubeGroup.add(m); cubies.push(m);
+  }
+  cam.radius = CONFIG.camera.radius;
+}
+
+/* ---- moves ---- */
+function parse(face, mod){
+  return {face, turns: mod === "'" ? -1 : mod === '2' ? 2 : 1, layers:1};
+}
+function moveName(mv){
+  return mv.face + (mv.turns === -1 ? "'" : mv.turns === 2 ? '2' : '');
+}
+function invert(mv){ return {face:mv.face, turns: mv.turns === 2 ? 2 : -mv.turns, layers:1}; }
+
+function selectLayer(mv){
+  const ax = AXIS[mv.face], s = SIGN[mv.face], off = (N-1)/2, eps = 1e-6;
+  const out = [];
+  for(const c of cubies){
+    const v = c.position[ax];
+    const depth = s > 0 ? off - v : v + off;
+    if(depth > -eps && depth < mv.layers - eps) out.push(c);
+  }
+  return out;
+}
+
+function push(mv){ queue.push(mv); }
+
+function startNext(){
+  if(animating || !queue.length) return;
+  const mv = queue.shift();
+  const group = selectLayer(mv);
+  const pivot = new THREE.Object3D();
+  cubeGroup.add(pivot);
+  group.forEach(c => pivot.attach(c));
+  const target = -SIGN[mv.face] * (Math.PI/2) * mv.turns;
+  animating = {mv, pivot, group, target, t:0,
+               dur: REDUCED ? 0 : CONFIG.turnMs * Math.abs(mv.turns)};
+}
+
+function finish(){
+  const {pivot, group, mv, target} = animating;
+  pivot.rotation[AXIS[mv.face]] = target;
+  pivot.updateMatrixWorld(true);
+  group.forEach(c => {
+    cubeGroup.attach(c);
+    c.position.set(snap(c.position.x), snap(c.position.y), snap(c.position.z));
+    snapQuat(c);
+  });
+  cubeGroup.remove(pivot);
+  animating = null;
+  syncState();                 // geometry is settled — only now is it safe to read
+}
+const snap = v => Math.round(v*2)/2;
+function snapQuat(o){
+  const m = new THREE.Matrix4().makeRotationFromQuaternion(o.quaternion);
+  const e = m.elements.map(x => Math.round(x));
+  m.fromArray(e);
+  o.quaternion.setFromRotationMatrix(m);
+}
+
+function tick(){
+  placeCamera();
+  if(!animating) startNext();
+  if(animating){
+    if(animating.dur === 0){ finish(); }
+    else{
+      animating.t += 16.7;
+      const u = Math.min(1, animating.t/animating.dur);
+      const ease = u<0.5 ? 2*u*u : 1-Math.pow(-2*u+2,2)/2;
+      animating.pivot.rotation[AXIS[animating.mv.face]] = animating.target * ease;
+      if(u >= 1) finish();
+    }
+  }
+  renderer.render(scene, camera);
+}
+
+/* =====================================================================
+   READ-OFF:  geometry  ->  (sigma, o)  in  S_7 x Z_3^6
+   ---------------------------------------------------------------------
+   sigma(i) = home label of the cubie now sitting in slot i.
+   o(i)     = position of that cubie's U/D facelet in the CLOCKWISE-from-
+              outside cyclic order of slot i's three outward normals,
+              counted from slot i's own U/D normal.  So o = 0 exactly when
+              the U/D facelet is on a U or D face — notation.md §5.
+
+   Because every 2x2x2 layer turn is a rotation about an axis through the
+   cube centre, each cubie's net motion is a single element of the rotation
+   group.  Undoing the pinned DBL cubie's own rotation therefore returns the
+   whole cube to the canonical frame, so the read-off stays well defined
+   even if D, L, B are ever added to the generating set.
+   ===================================================================== */
+function twistOf(slot, ud){
+  const a = [Math.abs(ud.x), Math.abs(ud.y), Math.abs(ud.z)];
+  const ax = a[0] > a[1] ? (a[0] > a[2] ? 0 : 2) : (a[1] > a[2] ? 1 : 2);
+  if(ax === 1) return 0;                                  // facelet still on U or D
+  const [sx,sy,sz] = SLOT_SIGNS[slot];
+  return sx*sy*sz > 0 ? (ax === 0 ? 1 : 2)                // CW from y is (y, x, z)
+                      : (ax === 2 ? 1 : 2);               // CW from y is (y, z, x)
+}
+
+function readState(){
+  const anchor = cubies.find(c => c.userData.home === PINNED);
+  const M = anchor.quaternion.clone().invert();           // back to the canonical frame
+  const perm = new Array(8), ori = new Array(8);
+  for(const c of cubies){
+    const p = c.position.clone().applyQuaternion(M);
+    const s = slotOf(p);
+    perm[s] = c.userData.home;
+    const ud = c.userData.udLocal.clone()
+                 .applyQuaternion(c.quaternion).applyQuaternion(M);
+    ori[s] = twistOf(s, ud);
+  }
+  return {perm, ori};
+}
+
+/* ---- the real solved test: read the sticker colours off each face ---- */
+function faceReport(){
+  const buckets = {};                                    // face direction -> [colours]
+  const v = new THREE.Vector3();
+  for(const c of cubies) for(const s of c.userData.stickers){
+    v.copy(s.userData.n).applyQuaternion(c.quaternion);
+    const a = [Math.abs(v.x), Math.abs(v.y), Math.abs(v.z)];
+    const ax = a[0] > a[1] ? (a[0] > a[2] ? 0 : 2) : (a[1] > a[2] ? 1 : 2);
+    const comp = [v.x, v.y, v.z][ax];
+    const dir = (ax === 0 ? (comp > 0 ? 'R' : 'L')
+              :  ax === 1 ? (comp > 0 ? 'U' : 'D')
+              :             (comp > 0 ? 'F' : 'B'));
+    (buckets[dir] = buckets[dir] || []).push(s.userData.face);
+  }
+  const out = {};
+  for(const dir of ['U','D','L','R','F','B']){
+    const cols = buckets[dir] || [];
+    out[dir] = {mono: cols.length > 0 && cols.every(c => c === cols[0]), colour: cols[0] || null};
+  }
+  return out;
+}
+const isSolved = rep => ['U','D','L','R','F','B'].every(f => rep[f].mono);
+
+/* ---- permutation helpers ---- */
+function cycles(perm){
+  const seen = new Array(8).fill(false), out = [];
+  for(let i=0;i<8;i++){
+    if(seen[i] || perm[i] === i){ seen[i] = true; continue; }
+    const cyc = []; let j = i;
+    while(!seen[j]){ seen[j] = true; cyc.push(j); j = perm[j]; }
+    if(cyc.length > 1) out.push(cyc);
+  }
+  return out;
+}
+const sgn = cs => cs.reduce((s,c) => s * ((c.length - 1) % 2 ? -1 : 1), 1);
+const gcd = (a,b) => b ? gcd(b, a%b) : a;
+const lcm = (a,b) => a / gcd(a,b) * b;
+
+/* order of (sigma, o) in G_2: run the state forward until it returns to e */
+function stateOrder(perm, ori){
+  let p = perm.slice(), o = ori.slice();
+  for(let n=1; n<=2520; n++){
+    if(p.every((x,i) => x === i) && o.every(x => x === 0)) return n;
+    const np = new Array(8), no = new Array(8);
+    // notation.md §5:  new_perm[i] = perm[cp[i]],  new_ori[i] = ori[cp[i]] + co[i]
+    for(let i=0;i<8;i++){ np[i] = p[perm[i]]; no[i] = (o[perm[i]] + ori[i]) % 3; }
+    p = np; o = no;
+  }
+  return null;
+}
+
+/* ===================== rendering the state vector ===================== */
+function buildStateTable(){
+  const hd = document.getElementById('svSlots');
+  const pr = document.getElementById('svPerm');
+  const or = document.getElementById('svOri');
+  for(let i=0;i<8;i++){
+    const th = document.createElement('th');
+    th.innerHTML = SLOT_NAME[i] + '<span class="ix">' + i + '</span>';
+    if(i === PINNED) th.className = 'pinned';
+    hd.appendChild(th);
+    for(const [row, id] of [[pr,'p'],[or,'o']]){
+      const td = document.createElement('td');
+      td.className = 'cell' + (i === PINNED ? ' pinned' : '');
+      td.id = 'sv-' + id + i;
+      row.appendChild(td);
+    }
+  }
+  katex.render('(\\sigma, o) \\in S_7 \\times \\mathbb{Z}_3^{6}',
+               document.getElementById('svHead'), {throwOnError:false});
+  const ch = document.getElementById('chips');
+  for(const f of ['U','D','L','R','F','B']){
+    const d = document.createElement('div');
+    d.className = 'chip'; d.id = 'chip-' + f;
+    d.innerHTML = '<span class="sw"></span><span class="cf">' + f + '</span>';
+    ch.appendChild(d);
+  }
+}
+
+const hex = n => '#' + n.toString(16).padStart(6,'0');
+
+function renderState(){
+  const {perm, ori} = readState();
+
+  for(let i=0;i<8;i++){
+    const pc = document.getElementById('sv-p' + i);
+    const oc = document.getElementById('sv-o' + i);
+    pc.textContent = perm[i];
+    oc.textContent = ori[i];
+    const off = (i !== PINNED) && (perm[i] !== i || ori[i] !== 0);
+    pc.className = 'cell' + (i === PINNED ? ' pinned' : off && perm[i] !== i ? ' moved' : '');
+    oc.className = 'cell' + (i === PINNED ? ' pinned' : off && ori[i] !== 0 ? ' moved' : '');
+  }
+
+  const cs = cycles(perm);
+  const cycTeX = cs.length
+    ? cs.map(c => '(' + c.join('\\,') + ')').join('')
+    : 'e';
+  katex.render('\\sigma = ' + cycTeX, document.getElementById('eqCycle'), {throwOnError:false});
+
+  const sum = ori.reduce((a,b) => a+b, 0);
+  katex.render('o = (' + ori.join(',') + '), \\qquad \\sum_{i} o_i = ' + sum +
+               ' \\equiv ' + (sum % 3) + ' \\pmod 3',
+               document.getElementById('eqTwist'), {throwOnError:false});
+
+  const tw = document.getElementById('ivTwist');
+  tw.textContent = (sum % 3) + (sum % 3 === 0 ? '  ✓' : '  ✗ impossible');
+  tw.className = 'v ' + (sum % 3 === 0 ? 'ok' : 'bad');
+
+  const s = sgn(cs);
+  document.getElementById('ivSgn').textContent = (s > 0 ? '+1  (even)' : '−1  (odd)');
+
+  let home = 0;
+  for(let i=0;i<8;i++) if(i !== PINNED && perm[i] === i && ori[i] === 0) home++;
+  document.getElementById('ivFixed').textContent = home + ' / 7';
+
+  const ord = stateOrder(perm, ori);
+  document.getElementById('ivOrder').textContent = ord === null ? '—' : ord;
+
+  /* face colour test — the real solved-state check */
+  const rep = faceReport();
+  for(const f of ['U','D','L','R','F','B']){
+    const chip = document.getElementById('chip-' + f);
+    chip.className = 'chip ' + (rep[f].mono ? 'mono' : 'mixed');
+    chip.querySelector('.sw').style.background =
+      rep[f].colour ? hex(CONFIG.colors[rep[f].colour]) : 'transparent';
+  }
+  const solved = isSolved(rep);
+  const flag = document.getElementById('solvedFlag');
+  flag.textContent = solved ? 'every face monochrome · state = e' : 'state ≠ e';
+  flag.className = 'solved ' + (solved ? 'yes' : 'no');
+}
+
+function syncState(){ renderState(); }
+
+/* ---- bookkeeping ---- */
+function doMove(mv, record = true){
+  push(mv);
+  if(record){
+    history.push(mv);
+    htm += 1;
+    qtm += (mv.turns === 2 ? 2 : 1);
+  }
+  renderTape();
+  updateCounts();
+}
+
+function undo(){
+  if(!history.length) return;
+  const mv = history.pop();
+  htm -= 1; qtm -= (mv.turns === 2 ? 2 : 1);
+  push(invert(mv));
+  renderTape(); updateCounts();
+}
+
+function reset(){
+  queue = []; history = []; htm = 0; qtm = 0;
+  if(animating){ cubeGroup.remove(animating.pivot); animating = null; }
+  buildCube(); renderTape(); updateCounts(); syncState();
+}
+
+function scramble(){
+  let prev = null;
+  for(let i=0;i<CONFIG.scrambleLen;i++){
+    let f;
+    do { f = CONFIG.faces[Math.floor(Math.random()*CONFIG.faces.length)]; } while(f === prev);
+    prev = f;
+    const t = [1,-1,2][Math.floor(Math.random()*3)];
+    doMove({face:f, turns:t, layers:1});
+  }
+}
+
+function updateCounts(){
+  document.getElementById('htm').textContent = htm;
+  document.getElementById('qtm').textContent = qtm;
+}
+
+function renderTape(){
+  const w = document.getElementById('tapeWord');
+  const iv = document.getElementById('tapeInv');
+  if(!history.length){
+    w.innerHTML  = '<span class="empty">identity — turn a face to begin</span>';
+    iv.innerHTML = '<span class="empty">e</span>';
+    return;
+  }
+  w.innerHTML = history
+    .map((m,i) => `<span class="${i===history.length-1?'last':''}">${moveName(m)}</span>`)
+    .join(' ');
+  iv.innerHTML = history.slice().reverse()
+    .map(m => `<span>${moveName(invert(m))}</span>`).join(' ');
+  const line = w.parentElement; line.scrollLeft = line.scrollWidth;
+}
+
+/* ---- UI ---- */
+function buildFaceGrid(){
+  const g = document.getElementById('faceGrid');
+  g.innerHTML = '';
+  for(const f of CONFIG.faces){
+    const label = document.createElement('div');
+    label.className = 'fn'; label.textContent = f;
+    g.appendChild(label);
+    for(const mod of ['', "'", '2']){
+      const b = document.createElement('button');
+      b.textContent = f + mod;
+      b.onclick = () => doMove(parse(f, mod));
+      g.appendChild(b);
+    }
+  }
+}
+
+const MATH = `
+<h3>1 · Physical description</h3>
+<p>The pocket cube has one piece type: eight corner cubies, in a single orbit. There are no
+edges and no fixed centres, so nothing on the puzzle marks a canonical frame. We supply one
+by <em>pinning</em> the <code>DBL</code> corner — think of it as nailing one corner of a
+tablecloth to the table, after which every remaining rearrangement of the cloth is a genuine
+change rather than a change of viewpoint. Once <code>DBL</code> is pinned, the faces
+<code>D</code>, <code>L</code>, <code>B</code> would move the nail, so the generating set is</p>
+$$S = \\{\\,U^{\\pm 1},\\; R^{\\pm 1},\\; F^{\\pm 1}\\,\\}.$$
+<p class="note">Nothing is lost: any word in all six faces equals a whole-cube rotation composed
+with a word in $S$, so the six-face group is $G_2 \\times$ (the 24 rotations).</p>
+
+<h3>2 · Group order</h3>
+<p>Seven movable corners permute freely, and six of their orientations are free — the seventh
+is forced:</p>
+$$|G_2| \\;=\\; 7!\\cdot 3^{6} \\;=\\; 3{,}674{,}160$$
+<p class="note">Tagged ✅ in <code>verified-facts.md</code> §1: this is the measured size of the
+reachable set under full BFS, not an evaluated formula.</p>
+
+<h3>3 · Structure</h3>
+<p>The naive corner group is the wreath product $\\mathbb{Z}_3 \\wr S_7$, of order
+$7!\\cdot 3^{7}$: permute the corners any way you like, then twist each one independently. The
+realizable states are the kernel of the twist homomorphism</p>
+$$\\tau : \\mathbb{Z}_3 \\wr S_7 \\longrightarrow \\mathbb{Z}_3, \\qquad
+  \\tau(\\sigma, o) = \\sum_{i} o_i ,$$
+$$\\text{so } [\\mathbb{Z}_3 \\wr S_7 : G_2] = 3 \\quad\\text{and}\\quad
+  G_2 \\;\\cong\\; (\\mathbb{Z}_3)^{6} \\rtimes S_7 .$$
+
+<h3>4 · The one invariant</h3>
+<p><em>Proof sketch.</em> Each generator $U$, $R$, $F$ is a 4-cycle on four corner slots, and the
+orientation cocycle it adds is $(0,0,0,0)$ for $U$ and a permutation of $(1,2,1,2)$ for $R$ and
+$F$. In every case the added twists sum to $0 \\bmod 3$. Since $\\tau$ is additive along the
+cocycle, $\\sum_i o_i \\bmod 3$ is constant along any word, and it is $0$ at $e$. Hence
+a single corner twisted in place is unreachable — the state vector panel's twist row can never
+sum to $1$ or $2$ modulo $3$, and watching it stay at $0$ under arbitrary turning is that proof
+running live.</p>
+<p>There is <strong>no</strong> parity constraint here: $\\operatorname{sgn}\\sigma$ takes both
+values, because $U$ alone is a 4-cycle and therefore odd. That is a genuine difference from the
+$3\\times3\\times3$, where corner and edge parities are locked to each other.</p>
+
+<h3>5 · Metric facts</h3>
+<p>Complete BFS over all $3{,}674{,}160$ states gives</p>
+$$\\operatorname{diam}_{\\mathrm{HTM}} G_2 = 11, \\qquad
+  \\operatorname{diam}_{\\mathrm{QTM}} G_2 = 14 .$$
+<p class="note">Script and full distance histograms: <code>verified-facts.md</code> §3. Only
+$2{,}644$ states — about $0.07\\%$ — are a full $11$ HTM from solved. <strong>Scramble</strong>
+here applies $11$ random turns, which is the diameter but <em>not</em> a uniform sample of $G_2$.</p>
+
+<h3>6 · What the state vector shows</h3>
+<p>Slots are indexed in Kociemba order, <code>notation.md</code> §5:</p>
+<ul>
+<li>$\\sigma(i)$ — the home label of the cubie currently sitting in slot $i$.</li>
+<li>$o(i) \\in \\mathbb{Z}_3$ — how far that cubie's single U- or D-coloured facelet has been
+rotated away from a U or D face, counted <strong>clockwise as seen from outside the corner</strong>.
+So $o=0$ means white or yellow is on top or bottom.</li>
+</ul>
+<p>Concretely, slot $i$ has three outward normals. List them clockwise from outside, starting at
+that slot's own $\\pm y$ normal; $o(i)$ is the position of the U/D facelet in that list. The
+<code>DBL</code> column is hatched because it is the pin: it is always $(6, 0)$, which is exactly
+why the free data is $(\\sigma, o) \\in S_7 \\times \\mathbb{Z}_3^{6}$ and
+$7!\\cdot 3^6 = |G_2|$.</p>
+
+<h3>7 · Composition</h3>
+<p>A word is applied <strong>left to right</strong>: <code>U R</code> means <em>first</em> $U$,
+<em>then</em> $R$. As an action on states this is $\\sigma \\mapsto \\sigma\\cdot U\\cdot R$, a right
+action. The inverse is the reversed word with every letter inverted,
+$(\\texttt{R U F})^{-1} = \\texttt{F' U' R'}$ — the second line of the move tape.</p>
+
+<h3>8 · Two independent checks, running at once</h3>
+<p>The <em>solved</em> flag is computed by reading the actual sticker colours off the six face
+directions and testing each for monochromacy. The state vector is computed separately, from cubie
+positions and rotations. Neither is derived from the move history, so if the animation ever
+desynchronised from the algebra, the two panels would disagree. The read-off rule in
+<code>twistOf()</code> was checked against the BFS move tables of <code>verified-facts.md</code>
+§3 across a 20,000-step random walk, agreeing at every step.</p>
+
+<div class="flag">
+<strong>Discrepancy with <code>notation.md</code> §1.</strong> That file states the Western scheme
+has $U$, $F$, $R$ meeting at a corner in <em>clockwise</em> order. With its own axis assignment
+($U=+y$, $R=+x$, $F=+z$, right-handed), the clockwise order seen from outside the <code>URF</code>
+corner is $U \\to R \\to F$; $U \\to F \\to R$ is counterclockwise. The orientation cocycle in
+<code>verified-facts.md</code> §3 — e.g. $R$ sending a corner from <code>DFR</code> to
+<code>URF</code> with $o \\mathrel{+}= 2$ — agrees with $U \\to R \\to F$. This app follows the
+verified tables. <code>notation.md</code> §1 needs the two letters transposed.
+</div>`;
+
+document.getElementById('btnScramble').onclick = scramble;
+document.getElementById('btnUndo').onclick     = undo;
+document.getElementById('btnReset').onclick    = reset;
+
+addEventListener('keydown', e => {
+  if(e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  const f = e.key.toUpperCase();
+  if(!CONFIG.faces.includes(f)) return;
+  e.preventDefault();
+  const mod = e.altKey ? '2' : e.shiftKey ? "'" : '';
+  doMove(parse(f, mod));
+});
+
+/* ---- go ---- */
+initThree();
+buildFaceGrid();
+buildStateTable();
+buildCube();
+document.getElementById('mathBody').innerHTML = MATH;
+renderMathInElement(document.getElementById('mathBody'), {
+  delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],
+  throwOnError:false
+});
+renderTape();
+updateCounts();
+syncState();
+</script>
+</body>
+</html>
