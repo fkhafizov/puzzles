@@ -81,8 +81,6 @@
   .app dt{font-family:"JetBrains Mono",monospace; font-size:11.5px; letter-spacing:.05em;
           text-transform:uppercase; color:var(--ink-soft)}
   .app dd{margin:0}
-  .app .go{position:absolute; top:24px; right:24px; color:var(--ink-soft); transition:transform .18s ease}
-  .app:hover .go{transform:translate(3px,-3px); color:var(--ink)}
 
   /* ---------- chart ---------- */
   .chartcard{background:var(--panel); border:1px solid var(--rule); border-radius:14px; padding:24px}
@@ -118,11 +116,27 @@
   .dot.literature{background:var(--L)}
   .fact h3{font-size:17px; font-weight:600; margin:12px 0 8px}
   .fact p{margin:0; font-size:15px; color:var(--ink-soft)}
+  .fact p a{color:var(--ink); text-decoration-color:var(--rule); text-underline-offset:2px}
+  .fact p a:hover{color:var(--F); text-decoration-color:currentColor}
   .fact .big{
     font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:34px;
     letter-spacing:-.03em; line-height:1.05; color:var(--ink); margin:10px 0 6px;
   }
   .fact .big.sm{font-size:24px}
+
+  .fact.wide{grid-column:1 / -1; padding:26px 26px 24px}
+  .fact.wide h3{font-size:21px; margin:12px 0 10px}
+  .fact.wide > p{max-width:66ch}
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:22px; margin-top:22px; padding-top:22px; border-top:1px solid var(--rule);
+  }
+  .stat .big{font-size:30px; margin:0 0 4px}
+  .stat h4{
+    font-family:"Bricolage Grotesque",sans-serif; font-weight:600; font-size:15px;
+    letter-spacing:-.02em; margin:0 0 6px;
+  }
+  .stat p{margin:0; font-size:14px; color:var(--ink-soft)}
 
   .legend{display:flex; gap:18px; flex-wrap:wrap; font-size:13px; color:var(--ink-soft)}
   .legend span{display:inline-flex; align-items:center; gap:7px}
@@ -136,6 +150,27 @@
   .conv{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:26px}
   .conv h3{font-size:15px; font-weight:600; margin-bottom:8px}
   .conv p{margin:0; font-size:14.5px; color:var(--ink-soft)}
+
+  .refs{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:30px}
+  .refs h3{
+    font-family:"JetBrains Mono",monospace; font-size:11.5px; font-weight:500;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft);
+    margin:0 0 6px; padding-bottom:10px; border-bottom:1px solid var(--ink);
+  }
+  .reflist{list-style:none; margin:0; padding:0}
+  .reflist li{border-bottom:1px solid var(--rule)}
+  .reflist a{
+    display:block; padding:11px 0; text-decoration:none; color:var(--ink);
+    font-size:14.5px; line-height:1.35;
+  }
+  .reflist a:hover{color:var(--F)}
+  .reflist a:focus-visible{outline:2px solid var(--F); outline-offset:2px}
+  .reflist .src{
+    display:block; font-family:"JetBrains Mono",monospace; font-size:11px;
+    letter-spacing:.03em; color:var(--ink-soft); margin-top:4px;
+  }
+  .reflist a:hover .src{color:var(--ink-soft)}
+  .refnote{margin:22px 0 0; font-size:14px; color:var(--ink-soft); max-width:70ch}
 
   footer{padding:40px 0 64px; font-size:13.5px; color:var(--ink-soft)}
   footer a{color:var(--ink)}
@@ -173,26 +208,8 @@
     </div>
 
     <div class="apps">
-      <a class="app" href="https://fkhafizov.github.io/puzzles/cube222.html">
-        <span class="tag live">Live</span>
-        <svg class="go" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-          <path d="M4 12L12 4M12 4H6M12 4v6"/>
-        </svg>
-        <h3>2×2×2 cube</h3>
-        <p>Turn the faces, scramble, undo, and read the accumulated word and its inverse off
-          the move tape.</p>
-        <dl>
-          <dt>Generators</dt><dd class="mono">U, R, F &nbsp;(DBL fixed)</dd>
-          <dt>Order</dt><dd>$7!\cdot 3^{6} = 3{,}674{,}160$</dd>
-          <dt>Diameter</dt><dd>11 HTM · 14 QTM</dd>
-        </dl>
-      </a>
-
       <a class="app" href="https://fkhafizov.github.io/puzzles/template.html">
         <span class="tag">Starting point</span>
-        <svg class="go" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-          <path d="M4 12L12 4M12 4H6M12 4v6"/>
-        </svg>
         <h3>Template</h3>
         <p>The shared shell every puzzle app is built from: control panel, dual move counter,
           move tape, and a collapsible Math panel.</p>
@@ -200,6 +217,18 @@
           <dt>Keys</dt><dd class="mono">letter · Shift · Alt</dd>
           <dt>Panels</dt><dd>Controls, tape, math</dd>
           <dt>Deps</dt><dd>KaTeX from CDN only</dd>
+        </dl>
+      </a>
+
+      <a class="app" href="https://fkhafizov.github.io/puzzles/cube222.html">
+        <span class="tag live">Live</span>
+        <h3>2×2×2 cube</h3>
+        <p>Turn the faces, scramble, undo, and read the accumulated word and its inverse off
+          the move tape.</p>
+        <dl>
+          <dt>Generators</dt><dd class="mono">U, R, F &nbsp;(DBL fixed)</dd>
+          <dt>Order</dt><dd>$7!\cdot 3^{6} = 3{,}674{,}160$</dd>
+          <dt>Diameter</dt><dd>11 HTM · 14 QTM</dd>
         </dl>
       </a>
     </div>
@@ -249,21 +278,33 @@
     </div>
 
     <div class="facts">
-      <div class="fact">
-        <span class="badge"><i class="dot computed"></i> computed</span>
-        <div class="big">3,674,160</div>
-        <h3>The 2×2×2, exactly</h3>
-        <p>A full breadth-first search over the group with the DBL corner pinned reaches
-          exactly $7!\cdot 3^{6}$ states — which is itself a strong check that the move
-          tables are right.</p>
-      </div>
-
-      <div class="fact">
-        <span class="badge"><i class="dot computed"></i> computed</span>
-        <div class="big">0.07%</div>
-        <h3>Almost nothing is far away</h3>
-        <p>Only 2,644 states sit at HTM distance 11, and only 276 at QTM distance 14. Most
-          of the group crowds into the layers just below the diameter.</p>
+      <div class="fact wide">
+        <span class="badge"><i class="dot computed"></i> computed · full BFS · 2026-08-21</span>
+        <h3>Everything we know about the 2×2×2</h3>
+        <p>One breadth-first search, with the DBL corner pinned and $U$, $R$, $F$ as
+          generators, settles the whole picture. It runs in about a minute in CPython and
+          every figure below falls out of it.</p>
+        <div class="stats">
+          <div class="stat">
+            <div class="big">3,674,160</div>
+            <h4>States reached</h4>
+            <p>Exactly $7!\cdot 3^{6}$ — matching the formula is itself a strong check that
+              the move tables are right.</p>
+          </div>
+          <div class="stat">
+            <div class="big">11 · 14</div>
+            <h4>Diameter, HTM and QTM</h4>
+            <p>$\operatorname{diam}_{\mathrm{HTM}} G_2 = 11$,
+              $\operatorname{diam}_{\mathrm{QTM}} G_2 = 14$. Charging 2 for a half turn adds
+              three moves to the worst case.</p>
+          </div>
+          <div class="stat">
+            <div class="big">0.07%</div>
+            <h4>Antipodal states</h4>
+            <p>Just 2,644 states sit at HTM distance 11, and 276 at QTM distance 14. The rest
+              crowd into the layers below.</p>
+          </div>
+        </div>
       </div>
 
       <div class="fact">
@@ -278,9 +319,11 @@
         <span class="badge"><i class="dot literature"></i> literature</span>
         <div class="big">20 <span style="font-size:20px; color:var(--ink-soft)">HTM</span></div>
         <h3>God's number, 3×3×3</h3>
-        <p>Twenty in the half-turn metric (Rokicki, Kociemba, Davidson and Dethridge, 2010);
-          twenty-six in the quarter-turn metric (Rokicki, 2014). The metric is never
-          optional — 20 and 26 describe the same puzzle.</p>
+        <p>Twenty in the half-turn metric
+          (<a href="https://tomas.rokicki.com/rubik20.pdf">Rokicki, Kociemba, Davidson and
+          Dethridge</a>, 2010); twenty-six in the quarter-turn metric
+          (<a href="https://cube20.org/qtm/">Rokicki and Davidson</a>, 2014). The metric is
+          never optional — 20 and 26 describe the same puzzle.</p>
       </div>
 
       <div class="fact">
@@ -289,15 +332,6 @@
         <h3>The 4×4×4</h3>
         <p>$\dfrac{8!\cdot 3^{7}\cdot 24!\cdot 24!/(4!)^{6}}{24}$, where the division by 24
           removes whole-cube orientation, since the centres no longer fix a frame.</p>
-      </div>
-
-      <div class="fact">
-        <span class="badge"><i class="dot computed"></i> computed</span>
-        <div class="big">11 · 14</div>
-        <h3>Two diameters, one group</h3>
-        <p>$\operatorname{diam}_{\mathrm{HTM}} G_2 = 11$ and
-          $\operatorname{diam}_{\mathrm{QTM}} G_2 = 14$. Charging 2 for a half turn instead
-          of 1 adds three moves to the worst case.</p>
       </div>
     </div>
 
@@ -333,6 +367,67 @@
           a four-figure scientific approximation instead of a wall of digits.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Sources, code, and open problems</h2>
+      <div class="eyebrow">every figure above traces back here</div>
+    </div>
+
+    <div class="refs">
+      <div>
+        <h3>God's number</h3>
+        <ul class="reflist">
+          <li><a href="https://tomas.rokicki.com/rubik20.pdf">The Diameter of the Rubik's Cube Group Is Twenty
+            <span class="src">Rokicki · Kociemba · Davidson · Dethridge · SIAM Review 56(4) 645–670, 2014</span></a></li>
+          <li><a href="https://www.cube20.org/">God's Number is 20
+            <span class="src">cube20.org · the 2010 half-turn result, with the timeline of bounds</span></a></li>
+          <li><a href="https://cube20.org/qtm/">God's Number is 26 in the Quarter Turn Metric
+            <span class="src">cube20.org/qtm · Rokicki and Davidson, 2014</span></a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>CayleyPy</h3>
+        <ul class="reflist">
+          <li><a href="https://github.com/cayleypy/cayleypy">cayleypy/cayleypy
+            <span class="src">github · Cayley and Schreier graphs, beam search, pretrained predictors</span></a></li>
+          <li><a href="https://arxiv.org/abs/2502.13266">A Machine Learning Approach That Beats Large Rubik's Cubes
+            <span class="src">Chervov et al. · arXiv:2502.13266</span></a></li>
+          <li><a href="https://arxiv.org/abs/2502.18663">CayleyPy RL: Pathfinding and Reinforcement Learning on Cayley Graphs
+            <span class="src">Chervov et al. · arXiv:2502.18663</span></a></li>
+          <li><a href="https://arxiv.org/abs/2509.19162">CayleyPy Growth: growth computations and hundreds of new conjectures
+            <span class="src">Chervov et al. · arXiv:2509.19162</span></a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Kaggle · solve optimally</h3>
+        <ul class="reflist">
+          <li><a href="https://www.kaggle.com/competitions/cayley-py-professor-tetraminx-solve-optimally">Professor Tetraminx
+            <span class="src">kaggle · the variant whose order this project has not yet pinned down</span></a></li>
+          <li><a href="https://www.kaggle.com/competitions/cayley-py-444-cube">4×4×4 cube
+            <span class="src">kaggle · a diameter open for forty years</span></a></li>
+          <li><a href="https://www.kaggle.com/competitions/cayley-py-megaminx">Megaminx
+            <span class="src">kaggle · unsolved since 1982</span></a></li>
+          <li><a href="https://www.kaggle.com/competitions/cayleypy-christophers-jewel">Christopher's Jewel
+            <span class="src">kaggle</span></a></li>
+          <li><a href="https://www.kaggle.com/competitions/cayleypy-ihes-cube">SuperCube from IHES
+            <span class="src">kaggle · picture cube, stickers distinguishable</span></a></li>
+          <li><a href="https://www.kaggle.com/competitions/CayleyPy-pancake">Pancake sorting
+            <span class="src">kaggle · outperform the Gates–Papadimitriou bound</span></a></li>
+          <li><a href="https://www.kaggle.com/competitions/santa-2023">Santa 2023
+            <span class="src">kaggle · cubes, rings and globes; where the project started</span></a></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="refnote">The Kaggle boards are the fastest way to see how far short of a proof
+      the larger puzzles still are: for the 4×4×4 and the Megaminx nobody has a diameter,
+      only ever-shorter solutions.</p>
   </div>
 </section>
 
