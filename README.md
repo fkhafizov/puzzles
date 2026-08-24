@@ -1,6 +1,14 @@
 # puzzles
 puzzles
 
+```
+(base)  21:01 paulpaul ~/Library/Mobile Documents/com~apple~CloudDocs/puzzles-project-files $  ls -ltra
+total 184
+drwx------@  6 paulpaul  staff    192 Aug 21 04:06 files
+-rw-r--r--@  1 paulpaul  staff  35945 Aug 21 06:14 cube222.html
+-rw-r--r--@  1 paulpaul  staff  23659 Aug 22 10:55 index.html
+```
+
 
 
 2026.08.21
