@@ -1,5 +1,5 @@
-# puzzles
-puzzles
+# puzzles https://fkhafizov.github.io/puzzles/
+
 
 ```
 (base)  21:01 paulpaul ~/Library/Mobile Documents/com~apple~CloudDocs/puzzles-project-files $  ls -ltra
