@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CayleyPy — results, papers, and open boards</title>
+<style>
+:root{
+  --serif: "Iowan Old Style","Charter","Palatino Linotype",Palatino,Georgia,serif;
+  --sans: "Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+
+  /* Night — the default */
+  --paper:#101419;
+  --panel:#171C23;
+  --ink:#E9EDF2;
+  --ink-soft:#95A1AF;
+  --rule:#28303A;
+  --indigo:#8FB3F5;
+  --teal:#63C6B2;
+  --amber:#E4AC5E;
+  --tint-lit:#1D2A42;
+  --tint-comp:#17332F;
+  --tint-open:#3A2C12;
+  --on-ink:#101419;
+  --underline:rgba(143,179,245,.35);
+  color-scheme:dark;
+}
+
+/* Warm — cream stock, warmer ink, for long reading */
+[data-theme="warm"]{
+  --paper:#F5F0E6; --panel:#FFFCF5; --ink:#26211B; --ink-soft:#5E5547;
+  --rule:#E3DAC8; --indigo:#2C5580; --teal:#3D6B4E; --amber:#94590F;
+  --tint-lit:#E4EBF3; --tint-comp:#E2EDE3; --tint-open:#F3E7CE;
+  --on-ink:#FFFCF5; --underline:rgba(44,85,128,.3);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--serif); font-size:17px; line-height:1.62;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+a{color:var(--indigo);text-decoration:none;border-bottom:1px solid var(--underline)}
+a:hover{border-bottom-color:var(--indigo)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--indigo);outline-offset:3px;border-radius:2px}
+
+/* ---------- masthead ---------- */
+header.top{padding:20px 0 26px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+h1{font-size:2.55rem;line-height:1.12;margin:0 0 14px;font-weight:600;letter-spacing:-.015em}
+.standfirst{font-size:1.16rem;line-height:1.5;color:var(--ink);margin:0;max-width:none}
+.byline{margin-top:14px;font-family:var(--sans);font-size:.85rem;line-height:1.55;color:var(--ink-soft);max-width:none}
+
+/* ---------- provenance tags ---------- */
+.tag{
+  font-family:var(--sans);font-size:.66rem;font-weight:600;letter-spacing:.04em;
+  padding:2px 6px;border-radius:3px;vertical-align:2px;white-space:nowrap;
+}
+.t-lit{background:var(--tint-lit);color:var(--indigo)}
+.t-comp{background:var(--tint-comp);color:var(--teal)}
+.t-open{background:var(--tint-open);color:var(--amber)}
+.legend{
+  display:flex;flex-wrap:wrap;gap:18px;margin:28px 0 0;padding:14px 18px;
+  background:var(--panel);border:1px solid var(--rule);border-radius:6px;
+  font-family:var(--sans);font-size:.8rem;color:var(--ink-soft)
+}
+.legend span.tag{margin-right:7px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;padding-top:22px
+}
+.repolink{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--sans);font-size:.92rem;font-weight:600;letter-spacing:-.005em;
+  background:var(--indigo);color:var(--on-ink);
+  border:none;border-radius:7px;padding:11px 18px
+}
+.repolink:hover,.repolink:focus-visible{background:var(--ink);color:var(--paper);border:none}
+.repolink svg{width:19px;height:19px;fill:currentColor;flex:none}
+.repolink small{font-weight:400;opacity:.82;font-size:.85em}
+
+/* ---------- theme switcher ---------- */
+.themebar{
+  display:flex;align-items:center;gap:9px;font-family:var(--sans)
+}
+.themebar label{font-size:.78rem;color:var(--ink-soft)}
+.themebar select{
+  font-family:inherit;font-size:.8rem;color:var(--ink);
+  background:var(--panel);border:1px solid var(--rule);border-radius:5px;
+  padding:6px 30px 6px 11px;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:
+    linear-gradient(45deg,transparent 50%,currentColor 50%),
+    linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 15px) calc(50% + 1px), calc(100% - 11px) calc(50% + 1px);
+  background-size:4px 4px,4px 4px;
+  background-repeat:no-repeat
+}
+.themebar select:hover{border-color:var(--ink-soft)}
+@media (max-width:520px){ .topbar{gap:12px} .repolink{width:100%;justify-content:center} }
+
+/* ---------- view toggle + tabs ---------- */
+.viewtoggle{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.viewtoggle button{
+  font-family:inherit;font-size:.8rem;color:var(--ink-soft);cursor:pointer;
+  padding:6px 13px;border:none;background:var(--panel)
+}
+.viewtoggle button + button{border-left:1px solid var(--rule)}
+.viewtoggle button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+.tabbar{
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px;font-family:var(--sans);
+  border-bottom:2px solid var(--rule);margin-top:38px
+}
+.tabbar button{
+  font-family:inherit;font-size:1.792rem;font-weight:600;cursor:pointer;
+  color:var(--ink-soft);letter-spacing:-.025em;line-height:1.15;
+  background:none;
+  border:2px solid var(--rule);border-bottom:none;
+  border-radius:12px 12px 0 0;padding:7px 15px 8px
+}
+.tabbar button:hover{color:var(--ink)}
+.tabbar button:not([aria-selected="true"]):hover{background:var(--panel)}
+.tabbar button[aria-selected="true"]{
+  font-size:2.24rem;color:var(--ink);background:var(--paper);
+  border-color:var(--rule);border-top:3px solid var(--indigo);
+  padding:8px 19px 12px;margin-bottom:-2px;position:relative;z-index:1
+}
+[hidden]{display:none!important}
+body.tabs section{display:none;border-top:none}
+body.tabs section.active{
+  display:block;
+  border:2px solid var(--rule);border-top:none;border-radius:0 0 12px 12px;
+  padding:34px 30px 46px
+}
+
+@media (max-width:520px){
+  .tabbar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tabbar button{white-space:nowrap;padding:6px 11px 7px;font-size:1.2rem}
+  .tabbar button[aria-selected="true"]{font-size:1.5rem;padding:7px 13px 10px}
+  body.tabs section.active{padding:24px 18px 34px}
+}
+
+/* ---------- sections ---------- */
+section{padding:52px 0;border-top:1px solid var(--rule)}
+h2{font-size:1.6rem;font-weight:600;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--ink-soft);margin:0 0 30px;max-width:64ch}
+h3{font-size:1.08rem;font-weight:600;margin:34px 0 8px}
+p{max-width:66ch}
+
+/* ---------- the scale ---------- */
+.scalebox{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:26px 20px 14px}
+#scale{width:100%;height:auto;display:block;overflow:visible}
+#scale text{font-family:var(--sans)}
+#scale .ax{stroke:var(--ink)}
+#scale .tick{stroke:var(--rule)}
+#scale .tlab{fill:var(--ink-soft)}
+#scale .mlab{fill:var(--ink)}
+#scale .m-open{stroke:var(--indigo);fill:var(--indigo)}
+#scale .m-proved{stroke:var(--teal);fill:var(--teal)}
+#scale .m-ref{stroke:var(--amber);fill:var(--amber)}
+.readout{
+  font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);
+  min-height:2.9em;padding:12px 4px 0;border-top:1px solid var(--rule);margin-top:10px
+}
+.readout strong{color:var(--ink);font-weight:600}
+.dot{cursor:pointer}
+.dot circle{transition:r .12s ease}
+.dot:hover circle,.dot:focus circle{r:9}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.88rem;min-width:600px}
+caption{caption-side:bottom;text-align:left;padding-top:12px;font-size:.8rem;color:var(--ink-soft);font-family:var(--sans)}
+th{
+  text-align:left;font-weight:600;color:var(--ink-soft);font-size:.78rem;
+  padding:0 12px 9px 0;border-bottom:1.5px solid var(--ink)
+}
+td{padding:11px 12px 11px 0;border-bottom:1px solid var(--rule);vertical-align:baseline}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;padding-right:16px}
+tbody tr:last-child td{border-bottom:none}
+.name{font-weight:600;color:var(--ink)}
+.bar{position:relative;min-width:96px}
+.bar i{display:block;height:6px;background:var(--teal);border-radius:1px;opacity:.75}
+.bar b{font-weight:600;font-size:.8rem;display:block;margin-bottom:3px;font-variant-numeric:tabular-nums}
+
+/* ---------- status rows ---------- */
+.status{list-style:none;padding:0;margin:0}
+.status li{
+  display:grid;grid-template-columns:210px 1fr;gap:4px 30px;
+  padding:16px 0;border-bottom:1px solid var(--rule)
+}
+.status li:last-child{border-bottom:none}
+.status .who{font-weight:600;font-family:var(--sans);font-size:.95rem}
+.status .what{margin:0;font-size:.98rem;max-width:74ch}
+.status .what em{font-style:normal;color:var(--ink-soft)}
+
+/* ---------- papers ---------- */
+.paper{display:grid;grid-template-columns:52px 1fr;gap:0 24px;padding:26px 0;border-bottom:1px solid var(--rule)}
+.paper:last-of-type{border-bottom:none}
+.seq{
+  font-family:var(--sans);font-size:.95rem;font-weight:600;color:var(--indigo);
+  padding-top:3px;letter-spacing:-.02em
+}
+.paper h3{margin:0 0 4px;font-size:1.13rem}
+.meta{font-family:var(--sans);font-size:.79rem;color:var(--ink-soft);margin:0 0 12px}
+.findings{margin:0;padding-left:0;list-style:none}
+.findings li{padding:3px 0 3px 16px;position:relative;font-size:.98rem;max-width:64ch}
+.findings li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:1.5px;background:var(--ink-soft)}
+
+/* ---------- kaggle ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.filters button{
+  font-family:var(--sans);font-size:.82rem;padding:6px 13px;border-radius:20px;
+  border:1px solid var(--rule);background:var(--panel);color:var(--ink-soft);cursor:pointer
+}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.boards{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:16px}
+.board{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:17px 18px;border-left:3px solid var(--rule)}
+.board.open{border-left-color:var(--amber)}
+.board.origin{border-left-color:var(--indigo)}
+.board h4{margin:0 0 6px;font-size:1.02rem;font-weight:600}
+.board h4 a{border-bottom:none}
+.board p{margin:0;font-size:.9rem;color:var(--ink-soft);font-family:var(--sans);line-height:1.5}
+.board[hidden]{display:none}
+
+/* ---------- sources ---------- */
+.src{list-style:none;padding:0;margin:0}
+.src li{padding:9px 0;border-bottom:1px solid var(--rule);font-size:.97rem}
+.src li:last-child{border-bottom:none}
+.src .cite{display:block;font-family:var(--sans);font-size:.79rem;color:var(--ink-soft)}
+
+.math{font-family:var(--serif);font-size:1.06em;font-style:italic;white-space:nowrap}
+.math .n{font-style:italic}
+sup{font-size:.72em;font-style:normal}
+.note{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--indigo);
+      border-radius:4px;padding:15px 18px;font-size:.95rem;margin:26px 0 0}
+.note p{margin:0}
+footer{padding:44px 0 70px;font-family:var(--sans);font-size:.82rem;color:var(--ink-soft);border-top:1px solid var(--rule)}
+
+@media (max-width:900px){ .wrap{padding:0 24px} }
+@media (max-width:640px){
+  body{font-size:16px}
+  header.top{padding:16px 0 20px}
+  .standfirst{font-size:1.06rem}
+  .status li{grid-template-columns:1fr}
+  .paper{grid-template-columns:1fr;gap:8px}
+  .seq{padding-top:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body class="tabs">
+
+<div class="wrap">
+
+<div class="topbar">
+  <a class="repolink" href="https://github.com/cayleypy/cayleypy">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    cayleypy/cayleypy <small>— the library on GitHub</small>
+  </a>
+  <div class="themebar">
+    <div class="viewtoggle" role="group" aria-label="Page layout">
+      <button id="v-tabs" aria-pressed="true">Tabs</button>
+      <button id="v-page" aria-pressed="false">Full page</button>
+    </div>
+    <label for="theme">Theme</label>
+    <select id="theme">
+      <option value="night" selected>Night</option>
+      <option value="warm">Warm</option>
+    </select>
+  </div>
+</div>
+
+<header class="top">
+  <h1 class="sr-only">CayleyPy — results, papers, and open boards</h1>
+  <p class="standfirst">The CayleyPy collaboration trains neural networks to estimate diffusion distance on Cayley
+  graphs and steers a GPU beam search with them. On puzzles far past the 3×3×3 cube it finds the shortest paths
+  anyone has found. What it does not yet do — for the 4×4×4, for the Megaminx — is prove that no shorter path exists.</p>
+  <p class="byline">Compiled from the CayleyPy papers, the project repositories, and the Kaggle boards.
+  Every figure on this page traces to a source at the foot of the document.</p>
+
+  <div class="legend">
+    <div><span class="tag t-lit">literature</span>published and citable</div>
+    <div><span class="tag t-comp">computed</span>reported measurement from a run</div>
+    <div><span class="tag t-open">open</span>no proof exists</div>
+  </div>
+</header>
+
+<nav class="tabbar" id="tabbar" role="tablist" aria-label="Sections" hidden></nav>
+
+<section id="graphs" data-tab="Scale" class="active">
+  <h2>The graphs these searches run on</h2>
+  <p class="sub">A logarithmic scale, because nothing else fits. Each marker is a puzzle whose Cayley graph
+  CayleyPy searches; the count is the number of reachable states. Hover or tap a marker.</p>
+
+  <div class="scalebox">
+    <svg id="scale" viewBox="0 0 880 300" role="img"
+         aria-label="Logarithmic scale of state-space sizes from 10^19 to 10^80"></svg>
+    <div class="readout" id="readout">The 55-pancake graph carries about 3×10<sup>73</sup> states — on this
+    scale it sits a short step below the number of atoms in the observable universe, and a beam search still
+    crosses it in minutes.</div>
+  </div>
+</section>
+
+<section id="benchmarks" data-tab="Benchmarks">
+  <h2>What one H100 does in a few minutes</h2>
+  <p class="sub">Reported for a single NVIDIA H100 with network sizes N₁ = 1024, N₂ = 256, N<sub>r</sub> = 1,
+  beam width 2<sup>20</sup>, and 1.28×10<sup>8</sup> training examples — one architecture and one set of
+  hyperparameters across all four graphs, with no puzzle-specific heuristics.</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Puzzle</th>
+        <th class="num">States</th>
+        <th class="num">Train (min)</th>
+        <th class="num">Solve (min)</th>
+        <th class="num">Mean length</th>
+        <th>Solved</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="name">Rubik's Cube 3×3×3</td>
+        <td class="num">4×10<sup>19</sup></td><td class="num">0.8</td><td class="num">0.17</td>
+        <td class="num">20.5 ± 0.1</td>
+        <td class="bar"><b>100%</b><i style="width:100%"></i></td>
+      </tr>
+      <tr>
+        <td class="name">Rubik's Cube 4×4×4</td>
+        <td class="num">7×10<sup>45</sup></td><td class="num">1.5</td><td class="num">1.24</td>
+        <td class="num">65.0 ± 1.0</td>
+        <td class="bar"><b>94%</b><i style="width:94%"></i></td>
+      </tr>
+      <tr>
+        <td class="name">Pancake graph, n = 55</td>
+        <td class="num">3×10<sup>73</sup></td><td class="num">1.4</td><td class="num">3.49</td>
+        <td class="num">50.0 ± 0.3</td>
+        <td class="bar"><b>100%</b><i style="width:100%"></i></td>
+      </tr>
+      <tr>
+        <td class="name">Klotski 6×6 (periodic)</td>
+        <td class="num">2×10<sup>41</sup></td><td class="num">1.2</td><td class="num">0.45</td>
+        <td class="num">113 ± 2.0</td>
+        <td class="bar"><b>100%</b><i style="width:100%"></i></td>
+      </tr>
+    </tbody>
+    <caption><span class="tag t-comp">computed</span> Benchmark table reported in the cayleypy-cube repository.
+    Mean length is the average solution length over the test scrambles.</caption>
+  </table>
+  </div>
+
+  <h3>With more compute, on the 3×3×3</h3>
+  <ul class="findings">
+    <li>Optimality rate above 98% in the quarter-turn metric <span class="tag t-comp">computed</span> — against
+    60.3% for DeepCubeA and 69.6% for EfficientCube on the same benchmark.</li>
+    <li>Path finding roughly 20× faster than the previous state of the art at comparable solution lengths, and
+    more than 26× faster end-to-end, using up to 18.5× less training time.</li>
+    <li>Shorter average solutions than the combined best Kaggle Santa 2023 results on the 3×3×3, 4×4×4 and
+    5×5×5 — every single case, across a field of more than a thousand teams.</li>
+  </ul>
+</section>
+
+<section id="proof" data-tab="Proved &amp; open">
+  <h2>Proved, conjectured, open</h2>
+  <p class="sub">The distinction the Kaggle boards make visible. A diameter is a theorem about every state at
+  once; a leaderboard entry is a witness for one scramble.</p>
+
+  <ul class="status">
+    <li>
+      <div class="who">3×3×3, half turns <span class="tag t-lit">literature</span></div>
+      <p class="what"><strong>Diameter 20.</strong> Settled in 2010 by Rokicki, Kociemba, Davidson and Dethridge
+      and published in SIAM Review in 2014. <em>Every position solvable in 20 moves; some need all 20.</em></p>
+    </li>
+    <li>
+      <div class="who">3×3×3, quarter turns <span class="tag t-lit">literature</span></div>
+      <p class="what"><strong>Diameter 26.</strong> Rokicki and Davidson, 2014, in the metric where a half turn
+      counts as two moves.</p>
+    </li>
+    <li>
+      <div class="who">Symmetric group <span class="math">S<sub class="n">n</sub></span> <span class="tag t-lit">literature</span></div>
+      <p class="what"><strong>Quasi-polynomial diameters, conjectured.</strong> For many generating sets the
+      diameter appears to follow a small family of quadratic or linear polynomials indexed by
+      <span class="math">n mod s</span>. CayleyPy proposes a sharpening of the Babai-type bound to
+      <span class="math">n<sup>2</sup>/2 + 4n</span> in the undirected case, where earlier work gave only
+      <span class="math">O(n<sup>2</sup>)</span>.</p>
+    </li>
+    <li>
+      <div class="who">4×4×4 cube <span class="tag t-open">open</span></div>
+      <p class="what"><strong>No diameter.</strong> Forty years on, only ever-shorter solutions. The best
+      known upper bound is whatever the current leaderboard holds.</p>
+    </li>
+    <li>
+      <div class="who">Megaminx <span class="tag t-open">open</span></div>
+      <p class="what"><strong>No diameter.</strong> Unsettled since 1982.</p>
+    </li>
+    <li>
+      <div class="who">Professor Tetraminx <span class="tag t-open">open</span></div>
+      <p class="what"><strong>Order not yet pinned down</strong> in this project, let alone the diameter.</p>
+    </li>
+  </ul>
+
+  <div class="note">
+    <p>The gap is not a gap in effort. Proving a diameter of <span class="math">d</span> means certifying that
+    no state anywhere in the graph needs more than <span class="math">d</span> moves — a statement over
+    10<sup>45</sup> states for the 4×4×4. Beam search produces witnesses, one at a time, and a witness never
+    closes a universal claim.</p>
+  </div>
+</section>
+
+<section id="papers" data-tab="Papers">
+  <h2>The papers</h2>
+  <p class="sub">Four, in sequence, each building on the last — from a solver, to a library, to a conjectured duality that reframes what the search is doing.</p>
+
+  <div class="paper">
+    <div class="seq">I</div>
+    <div>
+      <h3><a href="https://arxiv.org/abs/2502.13266">A Machine Learning Approach That Beats Large Rubik's Cubes</a></h3>
+      <p class="meta">Chervov, Khoruzhii, Bukhal, Naghiyev, Zamkovoy, Koltsov, Cheldieva, Sychev, Lenin,
+      Obozov, Urvanov, Romanov · arXiv:2502.13266 · NeurIPS 2025, spotlight</p>
+      <ul class="findings">
+        <li>A neural network estimates diffusion distance; a batched beam search uses those estimates as its
+        heuristic. No handcrafted rules, no domain knowledge.</li>
+        <li>The first machine learning solver to work past the 3×3×3, with solution lengths on the 4×4×4 and
+        5×5×5 shorter than any previously available solver produced.</li>
+        <li>Above 98% optimality on the 3×3×3, where DeepCubeA reached 60.3% and EfficientCube 69.6%.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="paper">
+    <div class="seq">II</div>
+    <div>
+      <h3><a href="https://arxiv.org/abs/2502.18663">CayleyPy RL: Pathfinding and Reinforcement Learning on Cayley Graphs</a></h3>
+      <p class="meta">Chervov, Soibelman and 32 further authors · arXiv:2502.18663 · 28 pages</p>
+      <ul class="findings">
+        <li>Combines reinforcement learning with the direct diffusion-distance approach of the first paper, on
+        graphs with as many as 10<sup>70</sup> nodes.</li>
+        <li>Benchmarks the three moving parts separately — network architecture, the generators used for the
+        random walks, and the beam search itself.</li>
+        <li>Measured against GAP, the classical computer algebra system, and faster on the cases considered.</li>
+        <li>Applied to the Cayley graph of <span class="math">S<sub class="n">n</sub></span> with cyclic shift
+        and transposition generators.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="paper">
+    <div class="seq">III</div>
+    <div>
+      <h3><a href="https://arxiv.org/abs/2509.19162">CayleyPy Growth: Efficient growth computations and hundreds of new conjectures on Cayley graphs</a></h3>
+      <p class="meta">Chervov, Fedoriaka, Konstantinova, Naumov and 45 further authors · arXiv:2509.19162 ·
+      46 pages, 30 figures</p>
+      <ul class="findings">
+        <li>Announces the first public release of the CayleyPy library, for Cayley and Schreier graph
+        computation in Python.</li>
+        <li>Handles substantially larger graphs than GAP or Sage, and runs several orders of magnitude faster.</li>
+        <li>Around 200 new conjectures on diameters and growth, obtained by computation.</li>
+        <li>The quasi-polynomial diameter conjecture, and a refined Babai-type upper bound of
+        <span class="math">n<sup>2</sup>/2 + 4n</span> — computing a diameter efficiently despite the general
+        problem being NP-hard.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="paper">
+    <div class="seq">IV</div>
+    <div>
+      <h3><a href="https://arxiv.org/abs/2603.22195">CayleyPy-4: AI-Holography. Towards analogs of holographic string dualities for AI tasks</a></h3>
+      <p class="meta">Chervov, Levkovich-Maslyuk, Smolensky, Khafizov, Kiselev, Melnikov and 40 further
+      authors · arXiv:2603.22195 · March 2026 · hep-th, cs.AI, cs.LG, math.CO, math.GR</p>
+      <ul class="findings">
+        <li>Proposes a discrete analogue of holographic string duality for Cayley graphs, on the reading that
+        predicting the next move on a graph — what a GPT-style model or an RL agent does — is the analogue of
+        predicting a particle trajectory.</li>
+        <li>For Cayley graphs of <span class="math">S<sub class="n">n</sub></span> the dual objects appear to be
+        flat planar polygons, and the diameter equals the number of integer points inside the polygon, scaled
+        by <span class="math">n</span>.</li>
+        <li>A vertex maps holographically to a path inside that polygon, and graph distance becomes the area
+        under the path — a discrete realisation of the complexity-equals-volume picture.</li>
+        <li>Evidence for continuous conformal field theories and dual strings in the
+        large-<span class="math">n</span> limit, with new datasets released to help establish the duality for
+        more general cases.</li>
+        <li>The duality feeds back into the earlier conjectures: it leads to variants of the Babai bound and to
+        the quasi-polynomiality of diameters and word metrics from paper III.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="kaggle" data-tab="Kaggle">
+  <h2>Kaggle: solve optimally</h2>
+  <p class="sub">Open boards. The fastest way to see how far short of a proof the larger puzzles still are.</p>
+
+  <div class="filters" role="group" aria-label="Filter competitions">
+    <button data-f="all" aria-pressed="true">All seven</button>
+    <button data-f="cube" aria-pressed="false">Cubes and twisty puzzles</button>
+    <button data-f="perm" aria-pressed="false">Pure permutation</button>
+  </div>
+
+  <div class="boards">
+    <div class="board open" data-k="cube">
+      <h4><a href="https://www.kaggle.com/competitions/cayley-py-professor-tetraminx-solve-optimally">Professor Tetraminx</a></h4>
+      <p>The variant whose order this project has not yet pinned down.</p>
+    </div>
+    <div class="board open" data-k="cube">
+      <h4><a href="https://www.kaggle.com/competitions/cayley-py-444-cube">4×4×4 cube</a></h4>
+      <p>A diameter open for forty years.</p>
+    </div>
+    <div class="board open" data-k="cube">
+      <h4><a href="https://www.kaggle.com/competitions/cayley-py-megaminx">Megaminx</a></h4>
+      <p>Unsolved since 1982.</p>
+    </div>
+    <div class="board" data-k="cube">
+      <h4><a href="https://www.kaggle.com/competitions/cayleypy-christophers-jewel">Christopher's Jewel</a></h4>
+      <p>A twisty puzzle board run by the CayleyPy team.</p>
+    </div>
+    <div class="board" data-k="cube">
+      <h4><a href="https://www.kaggle.com/competitions/cayleypy-ihes-cube">SuperCube from IHES</a></h4>
+      <p>A picture cube: stickers are distinguishable, so the state space is larger than the plain cube's.</p>
+    </div>
+    <div class="board" data-k="perm">
+      <h4><a href="https://www.kaggle.com/competitions/CayleyPy-pancake">Pancake sorting</a></h4>
+      <p>Outperform the Gates–Papadimitriou bound.</p>
+    </div>
+    <div class="board origin" data-k="cube perm">
+      <h4><a href="https://www.kaggle.com/competitions/santa-2023">Santa 2023</a></h4>
+      <p>Cubes, rings and globes. Where the project started, with more than a thousand teams.</p>
+    </div>
+  </div>
+</section>
+
+<section id="sources" data-tab="Sources">
+  <h2>Sources</h2>
+
+  <h3>God's number</h3>
+  <ul class="src">
+    <li><a href="https://tomas.rokicki.com/rubik20.pdf">The Diameter of the Rubik's Cube Group Is Twenty</a>
+      <span class="cite">Rokicki, Kociemba, Davidson, Dethridge — SIAM Review 56(4) 645–670, 2014</span></li>
+    <li><a href="https://www.cube20.org/">God's Number is 20</a>
+      <span class="cite">cube20.org — the 2010 half-turn result, with the timeline of bounds</span></li>
+    <li><a href="https://cube20.org/qtm/">God's Number is 26 in the Quarter Turn Metric</a>
+      <span class="cite">cube20.org/qtm — Rokicki and Davidson, 2014</span></li>
+  </ul>
+
+  <h3>CayleyPy</h3>
+  <ul class="src">
+    <li><a href="https://github.com/cayleypy/cayleypy">cayleypy/cayleypy</a>
+      <span class="cite">Cayley and Schreier graphs, beam search, pretrained predictors</span></li>
+    <li><a href="https://github.com/khoruzhii/cayleypy-cube">khoruzhii/cayleypy-cube</a>
+      <span class="cite">Training and search pipeline; source of the benchmark table above</span></li>
+    <li><a href="https://arxiv.org/abs/2502.13266">A Machine Learning Approach That Beats Large Rubik's Cubes</a>
+      <span class="cite">Chervov et al. — arXiv:2502.13266</span></li>
+    <li><a href="https://arxiv.org/abs/2502.18663">CayleyPy RL: Pathfinding and Reinforcement Learning on Cayley Graphs</a>
+      <span class="cite">Chervov et al. — arXiv:2502.18663</span></li>
+    <li><a href="https://arxiv.org/abs/2509.19162">CayleyPy Growth: growth computations and hundreds of new conjectures</a>
+      <span class="cite">Chervov et al. — arXiv:2509.19162</span></li>
+    <li><a href="https://arxiv.org/abs/2603.22195">CayleyPy-4: AI-Holography. Towards analogs of holographic string dualities for AI tasks</a>
+      <span class="cite">Chervov et al. — arXiv:2603.22195</span></li>
+  </ul>
+</section>
+
+<footer>
+  <p>Figures are quoted from the linked sources; leaderboard standings change, so the Kaggle boards are
+  authoritative for current bests.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  // ---- log scale of state spaces ----
+  var W = 880, L = 58, R = 34, AXIS = 150;
+  var lo = 18, hi = 82;                       // log10 bounds
+  var svg = document.getElementById('scale');
+  var out = document.getElementById('readout');
+  var DEFAULT = out.innerHTML;
+
+  var items = [
+    {n:"Rubik's 3×3×3", e:19.6, side:'up', proved:true,
+     txt:"About 4×10<sup>19</sup> states. <strong>Diameter 20</strong> in the half-turn metric — the one puzzle here where the number is a theorem. CayleyPy averages 20.5 moves."},
+    {n:"Klotski 6×6", e:41.3, side:'down',
+     txt:"About 2×10<sup>41</sup> states with periodic boundaries. Solved in every test, averaging 113 moves."},
+    {n:"Rubik's 4×4×4", e:45.8, side:'up',
+     txt:"About 7×10<sup>45</sup> states. <strong>No diameter is known.</strong> CayleyPy averages 65 moves and solves 94% of scrambles under the benchmark budget."},
+    {n:"Paper II graphs", e:70, side:'down',
+     txt:"The scale the reinforcement-learning paper works at: graphs of roughly 10<sup>70</sup> nodes."},
+    {n:"Pancake, n = 55", e:73.5, side:'up',
+     txt:"About 3×10<sup>73</sup> states, and still solved every time — averaging 50 flips, in three and a half minutes."},
+    {n:"Atoms in the universe", e:80, side:'down', ref:true,
+     txt:"Roughly 10<sup>80</sup>, for scale. The largest graph on this page sits within a few log-steps of it."}
+  ];
+
+  function x(e){ return L + (e - lo) / (hi - lo) * (W - L - R); }
+  function el(t,a){ var n=document.createElementNS('http://www.w3.org/2000/svg',t);
+    for(var k in a) n.setAttribute(k,a[k]); return n; }
+
+  // axis
+  svg.appendChild(el('line',{class:'ax',x1:L,y1:AXIS,x2:W-R,y2:AXIS,'stroke-width':1.2}));
+  for(var e=20; e<=80; e+=10){
+    svg.appendChild(el('line',{class:'tick',x1:x(e),y1:AXIS,x2:x(e),y2:AXIS+7,'stroke-width':1.2}));
+    var t = el('text',{class:'tlab',x:x(e),y:AXIS+24,'text-anchor':'middle','font-size':'11.5'});
+    t.appendChild(document.createTextNode('10'));
+    var s = el('tspan',{dy:'-5','font-size':'8.5'}); s.appendChild(document.createTextNode(e)); t.appendChild(s);
+    svg.appendChild(t);
+  }
+  var cap = el('text',{class:'tlab',x:L,y:284,'font-size':'11'});
+  cap.appendChild(document.createTextNode('number of reachable states, logarithmic'));
+  svg.appendChild(cap);
+
+  // Lay out labels: estimate width, clamp to the frame, then drop each into the
+  // first lane on its side where it does not touch an already-placed label.
+  var GAP = 12, lanes = {up:[], down:[]};
+
+  items.forEach(function(d){
+    var cx = x(d.e);
+    var w  = d.n.length * 6.5 + 4;
+    var anchor = 'middle', left = cx - w/2, right = cx + w/2;
+    if(left < 4){        anchor = 'start'; left = cx;     right = cx + w; }
+    else if(right > W-4){ anchor = 'end';  right = cx;    left  = cx - w; }
+
+    var side = lanes[d.side], k = 0;
+    while(true){
+      if(!side[k]){ side[k] = []; }
+      var clash = side[k].some(function(b){ return left < b.r + GAP && right > b.l - GAP; });
+      if(!clash){ side[k].push({l:left, r:right}); break; }
+      k++;
+    }
+    d.cx = cx; d.anchor = anchor; d.lane = k;
+  });
+
+  items.forEach(function(d){
+    var up = d.side === 'up';
+    var labelY = up ? AXIS - 42 - d.lane * 21
+                    : AXIS + 62 + d.lane * 21;
+    var stemY  = up ? labelY + 7 : labelY - 15;
+    var stemTop = up ? AXIS : AXIS + 32;   // clears the 10^n tick labels
+    var kind = d.ref ? 'm-ref' : (d.proved ? 'm-proved' : 'm-open');
+
+    var g = el('g',{class:'dot '+kind,tabindex:'0',role:'button','aria-label':d.n});
+    g.appendChild(el('line',{x1:d.cx,y1:stemTop,x2:d.cx,y2:stemY,'stroke-width':1,
+                             'stroke-dasharray': d.ref ? '3 3' : 'none', opacity:.55}));
+    g.appendChild(el('circle',{cx:d.cx,cy:AXIS,r:5.5,'stroke-width':0}));
+
+    var lab = el('text',{class:'mlab',x:d.cx, y:labelY, 'text-anchor':d.anchor,
+                         'font-size':'12','font-weight':'600'});
+    lab.appendChild(document.createTextNode(d.n));
+    g.appendChild(lab);
+
+    function show(){ out.innerHTML = '<strong>'+d.n+'.</strong> '+d.txt; }
+    g.addEventListener('mouseenter',show);
+    g.addEventListener('focus',show);
+    g.addEventListener('click',show);
+    svg.appendChild(g);
+  });
+
+  svg.addEventListener('mouseleave',function(){ out.innerHTML = DEFAULT; });
+
+  // ---- theme ----
+  var root = document.documentElement;
+  var sel = document.getElementById('theme');
+
+  function apply(name){
+    if(name === 'warm'){ root.setAttribute('data-theme','warm'); }
+    else { name = 'night'; root.removeAttribute('data-theme'); }
+    sel.value = name;
+    try{ localStorage.setItem('cayleypy-theme', name); }catch(err){}
+  }
+
+  var saved = null;
+  try{ saved = localStorage.getItem('cayleypy-theme'); }catch(err){}
+  apply(saved === 'warm' ? 'warm' : 'night');
+
+  sel.addEventListener('change', function(){ apply(sel.value); });
+
+  // ---- layout: tabs or one long page ----
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section[data-tab]'));
+  var tabbar = document.getElementById('tabbar');
+  var vTabs = document.getElementById('v-tabs'), vPage = document.getElementById('v-page');
+  var mode = 'tabs', current = sections[0].id;
+
+  sections.forEach(function(sec){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-controls', sec.id);
+    b.dataset.target = sec.id;
+    b.innerHTML = sec.dataset.tab;
+    b.addEventListener('click', function(){ select(sec.id); });
+    tabbar.appendChild(b);
+  });
+  var tabs = Array.prototype.slice.call(tabbar.children);
+
+  function select(id){
+    current = id;
+    if(mode !== 'tabs') { document.getElementById(id).scrollIntoView({block:'start'}); return; }
+    sections.forEach(function(s){ s.classList.toggle('active', s.id === id); });
+    tabs.forEach(function(t){
+      var on = t.dataset.target === id;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+    });
+    if(history.replaceState) history.replaceState(null,'','#'+id);
+  }
+
+  function setMode(next){
+    mode = next;
+    var isTabs = next === 'tabs';
+    document.body.classList.toggle('tabs', isTabs);
+    tabbar.hidden = !isTabs;
+    vTabs.setAttribute('aria-pressed', isTabs ? 'true':'false');
+    vPage.setAttribute('aria-pressed', isTabs ? 'false':'true');
+    if(isTabs){ select(current); }
+    else { sections.forEach(function(s){ s.classList.remove('active'); }); }
+    try{ localStorage.setItem('cayleypy-view', next); }catch(err){}
+  }
+
+  // arrow-key navigation across tabs
+  tabbar.addEventListener('keydown', function(ev){
+    var i = tabs.indexOf(document.activeElement);
+    if(i < 0) return;
+    var j = ev.key === 'ArrowRight' ? i+1 : ev.key === 'ArrowLeft' ? i-1
+          : ev.key === 'Home' ? 0 : ev.key === 'End' ? tabs.length-1 : -1;
+    if(j < 0 && ev.key !== 'Home') return;
+    ev.preventDefault();
+    j = (j + tabs.length) % tabs.length;
+    tabs[j].focus(); select(tabs[j].dataset.target);
+  });
+
+  vTabs.addEventListener('click', function(){ setMode('tabs'); });
+  vPage.addEventListener('click', function(){ setMode('page'); });
+
+  var hash = location.hash.replace('#','');
+  if(hash && document.getElementById(hash) && document.getElementById(hash).dataset.tab) current = hash;
+
+  var savedView = null;
+  try{ savedView = localStorage.getItem('cayleypy-view'); }catch(err){}
+  setMode(savedView === 'page' ? 'page' : 'tabs');
+
+  // ---- competition filter ----
+  var btns = document.querySelectorAll('.filters button');
+  var cards = document.querySelectorAll('.board');
+  btns.forEach(function(b){
+    b.addEventListener('click',function(){
+      btns.forEach(function(o){ o.setAttribute('aria-pressed', o===b ? 'true':'false'); });
+      var f = b.dataset.f;
+      cards.forEach(function(c){
+        c.hidden = !(f==='all' || c.dataset.k.indexOf(f) > -1);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
