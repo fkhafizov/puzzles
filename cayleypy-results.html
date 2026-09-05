@@ -207,6 +207,14 @@ tbody tr:last-child td{border-bottom:none}
 }
 .paper h3{margin:0 0 4px;font-size:1.13rem}
 .meta{font-family:var(--sans);font-size:.79rem;color:var(--ink-soft);margin:0 0 12px}
+.authors{
+  font-family:var(--sans);font-size:.82rem;line-height:1.62;color:var(--ink-soft);
+  margin:0 0 14px;max-width:none;padding-left:13px;border-left:2px solid var(--rule)
+}
+.authors b{
+  display:block;margin-bottom:3px;color:var(--ink);font-weight:600;
+  font-size:.72rem;letter-spacing:.06em;text-transform:uppercase
+}
 .findings{margin:0;padding-left:0;list-style:none}
 .findings li{padding:3px 0 3px 16px;position:relative;font-size:.98rem;max-width:64ch}
 .findings li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:1.5px;background:var(--ink-soft)}
@@ -421,8 +429,8 @@ footer{padding:44px 0 70px;font-family:var(--sans);font-size:.82rem;color:var(--
     <div class="seq">I</div>
     <div>
       <h3><a href="https://arxiv.org/abs/2502.13266">A Machine Learning Approach That Beats Large Rubik's Cubes</a></h3>
-      <p class="meta">Chervov, Khoruzhii, Bukhal, Naghiyev, Zamkovoy, Koltsov, Cheldieva, Sychev, Lenin,
-      Obozov, Urvanov, Romanov · arXiv:2502.13266 · NeurIPS 2025, spotlight</p>
+      <p class="meta">arXiv:2502.13266 · 12 pages · cs.LG, cs.DM · NeurIPS 2025, spotlight</p>
+      <p class="authors"><b>12 authors</b>Alexander Chervov, Kirill Khoruzhii, Nikita Bukhal, Jalal Naghiyev, Vladislav Zamkovoy, Ivan Koltsov, Lyudmila Cheldieva, Arsenii Sychev, Arsenii Lenin, Mark Obozov, Egor Urvanov, Alexey Romanov</p>
       <ul class="findings">
         <li>A neural network estimates diffusion distance; a batched beam search uses those estimates as its
         heuristic. No handcrafted rules, no domain knowledge.</li>
@@ -437,7 +445,8 @@ footer{padding:44px 0 70px;font-family:var(--sans);font-size:.82rem;color:var(--
     <div class="seq">II</div>
     <div>
       <h3><a href="https://arxiv.org/abs/2502.18663">CayleyPy RL: Pathfinding and Reinforcement Learning on Cayley Graphs</a></h3>
-      <p class="meta">Chervov, Soibelman and 32 further authors · arXiv:2502.18663 · 28 pages</p>
+      <p class="meta">arXiv:2502.18663 · 32+16 pages · cs.LG, cs.DM, cs.SI, math.CO, math.GR</p>
+      <p class="authors"><b>34 authors</b>A. Chervov, M. Obozov, A. Soibelman, S. Lytkin, I. Kiselev, S. Fironov, A. Lukyanenko, A. Dolgorukova, A. Ogurtsov, F. Petrov, S. Krymskii, M. Evseev, L. Grunvald, D. Gorodkov, G. Antiufeev, G. Verbii, V. Zamkovoy, L. Cheldieva, I. Koltsov, A. Sychev, A. Eliseev, S. Nikolenko, N. Narynbaev, R. Turtayev, N. Rokotyan, S. Kovalev, A. Rozanov, V. Nelin, S. Ermilov, L. Shishina, D. Mamayeva, A. Korolkova, K. Khoruzhii, A. Romanov</p>
       <ul class="findings">
         <li>Combines reinforcement learning with the direct diffusion-distance approach of the first paper, on
         graphs with as many as 10<sup>70</sup> nodes.</li>
@@ -454,8 +463,8 @@ footer{padding:44px 0 70px;font-family:var(--sans);font-size:.82rem;color:var(--
     <div class="seq">III</div>
     <div>
       <h3><a href="https://arxiv.org/abs/2509.19162">CayleyPy Growth: Efficient growth computations and hundreds of new conjectures on Cayley graphs</a></h3>
-      <p class="meta">Chervov, Fedoriaka, Konstantinova, Naumov and 45 further authors · arXiv:2509.19162 ·
-      46 pages, 30 figures</p>
+      <p class="meta">arXiv:2509.19162 · brief version · 46 pages, 30 figures · math.CO, cs.LG, math.GR</p>
+      <p class="authors"><b>49 authors</b>A. Chervov, D. Fedoriaka, E. V. Konstantinova, A. Naumov, I. Kiselev, A. Sheveleva, I. Koltsov, S. Lytkin, A. Smolensky, A. Soibelman, F. Levkovich-Maslyuk, R. Grimov, D. Volovich, A. Isakov, A. Kostin, M. Litvinov, N. Vilkin-Krom, A. Bidzhiev, A. Krasnyi, M. Evseev, E. Geraseva, L. Grunwald, S. Galkin, E. Koldunov, S. Diner, A. Chevychelov, E. Kudasheva, A. Sychev, A. Kravchenko, Z. Kogan, A. Natyrova, L. Shishina, L. Cheldieva, V. Zamkovoy, D. Kovalenko, O. Papulov, S. Kudashev, D. Shiltsov, R. Turtayev, O. Nikitina, D. Mamayeva, S. Nikolenko, M. Obozov, A. Titarenko, A. Dolgorukova, A. Aparnev, O. Debeaupuis, S. Alami C., H. Isambert</p>
       <ul class="findings">
         <li>Announces the first public release of the CayleyPy library, for Cayley and Schreier graph
         computation in Python.</li>
@@ -472,8 +481,8 @@ footer{padding:44px 0 70px;font-family:var(--sans);font-size:.82rem;color:var(--
     <div class="seq">IV</div>
     <div>
       <h3><a href="https://arxiv.org/abs/2603.22195">CayleyPy-4: AI-Holography. Towards analogs of holographic string dualities for AI tasks</a></h3>
-      <p class="meta">Chervov, Levkovich-Maslyuk, Smolensky, Khafizov, Kiselev, Melnikov and 40 further
-      authors · arXiv:2603.22195 · March 2026 · hep-th, cs.AI, cs.LG, math.CO, math.GR</p>
+      <p class="meta">arXiv:2603.22195 · March 2026 · 20+120 pages · hep-th, cs.AI, cs.LG, math.CO, math.GR</p>
+      <p class="authors"><b>44 authors</b>A. Chervov, F. Levkovich-Maslyuk, A. Smolensky, F. Khafizov, I. Kiselev, D. Melnikov, I. Koltsov, S. Kudashev, D. Shiltsov, M. Obozov, S. Krymskii, V. Kirova, E. V. Konstantinova, A. Soibelman, S. Galkin, L. Grunwald, A. Kotov, A. Alexandrov, S. Lytkin, D. Fedoriaka, A. Chevychelov, Z. Kogan, A. Natyrova, L. Cheldieva, O. Nikitina, S. Fironov, A. Vakhrushev, A. Lukyanenko, V. Ilin, D. Gorodkov, N. Bogachev, I. Gaiur, M. Zaitsev, F. Petrov, L. Petrov, T. Gaintseva, A. Gavrilova, M. N. Smirnov, N. Kalinin, A. Khan, K. Jung, H. Mousset, H. Isambert, O. Debeaupuis</p>
       <ul class="findings">
         <li>Proposes a discrete analogue of holographic string duality for Cayley graphs, on the reading that
         predicting the next move on a graph — what a GPT-style model or an RL agent does — is the analogue of
@@ -705,7 +714,8 @@ footer{padding:44px 0 70px;font-family:var(--sans);font-size:.82rem;color:var(--
       t.setAttribute('aria-selected', on ? 'true' : 'false');
       t.tabIndex = on ? 0 : -1;
     });
-    if(history.replaceState) history.replaceState(null,'','#'+id);
+    // sandboxed/srcdoc contexts have an opaque origin and reject history writes
+    try{ if(history.replaceState) history.replaceState(null,'','#'+id); }catch(err){}
   }
 
   function setMode(next){
